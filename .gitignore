@@ -1,0 +1,9 @@
+# 系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 临时/校验文件
+_check.js
+*.log
+*.tmp

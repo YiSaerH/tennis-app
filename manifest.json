@@ -1,0 +1,19 @@
+{
+  "name": "网球记 — 我的网球日志",
+  "short_name": "网球记",
+  "description": "记录球拍参数（重量、磅数、挥重）与穿线提醒，记录每次打球的对手和时长，自动统计。",
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "start_url": "./index.html?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f7f7f4",
+  "theme_color": "#2e7d32",
+  "categories": ["sports", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
