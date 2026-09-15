@@ -17,29 +17,29 @@
   </view>
 
   <view class="stat-grid">
-    <view class="stat accent">
+    <view class="stat accent" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx">
       <view class="n">{{totalN}}<text class="unit">次</text></view>
       <view class="l">总打球次数</view>
     </view>
-    <view class="stat">
+    <view class="stat" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box">
       <view class="n">{{totalTime.n}}<text class="unit">{{totalTime.unit}}</text></view>
       <view class="l">累计时长</view>
     </view>
-    <view class="stat">
+    <view class="stat" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box">
       <view class="n">{{totalCost}}</view>
       <view class="l">累计场地费</view>
     </view>
-    <view class="stat">
+    <view class="stat" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box">
       <view class="n">{{monthCount}}<text class="unit">次</text></view>
-      <view class="l">{{monthLabel}}打球{{curTag}}</view>
+      <view class="l">{{monthShort}}打球{{curTag}}</view>
     </view>
-    <view class="stat">
+    <view class="stat" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box; left: 0rpx; top: 0rpx">
       <view class="n">{{monthTime.n}}<text class="unit">{{monthTime.unit}}</text></view>
-      <view class="l">{{monthLabel}}时长{{curTag}}</view>
+      <view class="l">{{monthShort}}时长{{curTag}}</view>
     </view>
-    <view class="stat">
+    <view class="stat" style="width: 337rpx; height: 163rpx; display: block; box-sizing: border-box">
       <view class="n">{{monthCost}}</view>
-      <view class="l">{{monthLabel}}场地费{{curTag}}</view>
+      <view class="l">{{monthShort}}场地费{{curTag}}</view>
     </view>
   </view>
 

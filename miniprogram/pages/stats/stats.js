@@ -7,7 +7,8 @@ const FOLD_N = 3;
 Page({
   data: {
     month: '',           // 'YYYY-MM'，空 = 本月
-    monthLabel: '',
+    monthLabel: '',      // 完整「2026年9月」，顶部月份选择框用
+    monthShort: '',      // 只「9月」，三张月度卡片用
     curTag: '',          // 选中本月时显示「 · 本月」
     totalN: 0,
     totalTime: { n: '0', unit: '分钟' },
@@ -48,6 +49,7 @@ Page({
     this.setData({
       month: m,
       monthLabel: parts[0] + '年' + Number(parts[1]) + '月',
+      monthShort: Number(parts[1]) + '月',
       curTag: isCur ? ' · 本月' : '',
       totalN: st.total,
       totalTime: store.fmtHours(st.totalMin),
