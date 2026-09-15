@@ -1,5 +1,5 @@
 /* 网球记 service worker — 离线可用 + 后台更新 */
-const CACHE = 'tennis-log-v3';
+const CACHE = 'tennis-log-v4';
 const ASSETS = [
   './index.html',
   './manifest.json',

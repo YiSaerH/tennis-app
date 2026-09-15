@@ -258,8 +258,16 @@
   .banner .b-line{margin-top:3px;color:#6b5413;}
   .banner .b-body button{margin-top:8px;}
 
+  .field .label-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;}
+  .link-btn{border:0;background:none;color:var(--accent);font-size:13px;font-weight:600;cursor:pointer;padding:0;font-family:inherit;}
+  .link-btn:hover{text-decoration:underline;}
+  .opp-row{display:flex;align-items:center;gap:10px;padding:10px 2px;border-bottom:1px dashed var(--line);}
+  .opp-row:last-child{border-bottom:0;}
+  .opp-row .name{flex:1;font-weight:600;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+  .opp-row .cnt{color:var(--muted);font-size:13px;white-space:nowrap;}
+
   @media(min-width:560px){
-    .stat-grid{grid-template-columns:repeat(4,1fr);}
+    .stat-grid{grid-template-columns:repeat(3,1fr);}
     .scrim{align-items:center;padding:20px;}
     .sheet{border-radius:18px;}
   }
@@ -326,6 +334,12 @@
     <div class="page-head">
       <div><h2>统计</h2><div class="sub">你的网球生活一览</div></div>
     </div>
+    <div class="filter-bar" style="margin:0 0 14px;">
+      <button class="cal-nav" type="button" onclick="statShift(-1)" aria-label="上个月">‹</button>
+      <input type="month" id="stat_month" aria-label="统计月份">
+      <button class="cal-nav" type="button" onclick="statShift(1)" aria-label="下个月">›</button>
+      <button class="mini" type="button" id="stat_month_reset">本月</button>
+    </div>
     <div class="stat-grid" id="statGrid"></div>
     <div class="recent">
       <h3>常一起打球的人</h3>
@@ -355,7 +369,10 @@
     </div>
     <div class="row">
       <div class="field">
-        <label>和谁打</label>
+        <div class="label-row">
+          <label>和谁打</label>
+          <button type="button" class="link-btn" onclick="openOppManager()">管理对手</button>
+        </div>
         <input type="text" id="s_opponent" placeholder="对手 / 球友" required list="opponentList">
         <datalist id="opponentList"></datalist>
       </div>
@@ -364,9 +381,15 @@
         <input type="number" id="s_duration" min="1" placeholder="如 90" required>
       </div>
     </div>
-    <div class="field">
-      <label>用了哪把拍子 <span class="opt">（可选）</span></label>
-      <select id="s_racket"><option value="">不记录</option></select>
+    <div class="row">
+      <div class="field">
+        <label>场地费（元） <span class="opt">（可选）</span></label>
+        <input type="number" id="s_cost" min="0" step="any" inputmode="decimal" placeholder="如 40">
+      </div>
+      <div class="field">
+        <label>用了哪把拍子 <span class="opt">（可选）</span></label>
+        <select id="s_racket"><option value="">不记录</option></select>
+      </div>
     </div>
     <div class="field">
       <label>备注 <span class="opt">（可选）</span></label>
@@ -424,6 +447,18 @@
   </form>
 </div>
 
+<!-- Opponent manager modal -->
+<div class="scrim" id="oppScrim">
+  <div class="sheet">
+    <h3>管理对手</h3>
+    <p class="hint">这里删除只是从「和谁打」的候选名单里移除，历史记录不受影响；以后再输入并保存会重新加入名单。</p>
+    <div id="oppList"></div>
+    <div class="sheet-actions">
+      <button type="button" class="primary" onclick="closeScrim('oppScrim')">完成</button>
+    </div>
+  </div>
+</div>
+
 <input type="file" id="fileInput" accept="application/json" style="display:none">
 <div class="toast" id="toast"></div>
 
@@ -439,6 +474,16 @@ function load(){
   }catch(e){ console.warn('读取失败', e); }
   if(!store.rackets) store.rackets = [];
   if(!store.sessions) store.sessions = [];
+  if(!store.opponents) store.opponents = [];
+  // 一次性迁移：把历史记录里出现过的对手收进对手库（之后在这里删除对手不会被复活）
+  if(!store.opponentsMigrated){
+    store.sessions.forEach(s=>{
+      const o = (s.opponent||'').trim();
+      if(o && !store.opponents.includes(o)) store.opponents.push(o);
+    });
+    store.opponentsMigrated = true;
+    save();
+  }
 }
 function save(){
   localStorage.setItem(KEY, JSON.stringify(store));
@@ -463,6 +508,38 @@ function racketName(id){
   return r ? r.name : '';
 }
 function goTab(t){ document.querySelector('.tab[data-tab="'+t+'"]').click(); }
+
+/* ---------- 对手库：输入过的对手存起来供选择，可删除 ---------- */
+function renderOpponentDatalist(){
+  document.getElementById('opponentList').innerHTML =
+    store.opponents.map(o=>`<option value="${esc(o)}">`).join('');
+}
+function openOppManager(){ renderOppManager(); openScrim('oppScrim'); }
+function renderOppManager(){
+  const el = document.getElementById('oppList');
+  if(!store.opponents.length){
+    el.innerHTML = '<p class="hint-line">还没有保存的对手，记一次打球时会自动加入。</p>';
+    return;
+  }
+  el.innerHTML = store.opponents.map((o,i)=>{
+    const n = store.sessions.filter(s=>s.opponent===o).length;
+    return `<div class="opp-row">
+      <div class="name" title="${esc(o)}">${esc(o)}</div>
+      <div class="cnt">${n?`打过 ${n} 次`:'还没打过'}</div>
+      <button class="mini danger" type="button" onclick="delOpponent(${i})">删除</button>
+    </div>`;
+  }).join('');
+}
+function delOpponent(i){
+  const name = store.opponents[i];
+  if(name==null) return;
+  const n = store.sessions.filter(s=>s.opponent===name).length;
+  const msg = n ? `把「${name}」从候选名单移除？\n（${n} 条历史记录会保留，不受影响）` : `把「${name}」从候选名单移除？`;
+  if(!confirm(msg)) return;
+  store.opponents = store.opponents.filter(o=>o!==name);
+  save(); renderOppManager(); renderOpponentDatalist();
+  toast('已从候选名单移除');
+}
 
 /* 穿线提醒：已穿超过 45 天 或 累计打球超过 15 小时 → 建议换线 */
 function stringingInfo(r){
@@ -553,6 +630,20 @@ function pickDay(ds){
   calDay = (calDay===ds) ? '' : ds;
   renderCalendar(); renderSessions();
 }
+
+/* 统计页按月查看：月份为空 = 本月 */
+function statMonthSel(){
+  const v = document.getElementById('stat_month').value;
+  if(v) return v;
+  const d = new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+}
+function statShift(delta){
+  const p = statMonthSel().split('-').map(Number);
+  const d = new Date(p[0], p[1]-1+delta, 1);
+  document.getElementById('stat_month').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+  renderStats();
+}
 function toast(msg){
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
@@ -607,6 +698,7 @@ function renderSessions(){
         <span class="pill big">${fmtDuration(s.duration)}</span>
       </div>
       <div class="card-stats">
+        ${s.cost!=null?`<span class="pill neutral">💰 ¥${s.cost}</span>`:''}
         ${rn?`<span class="pill">🎾 ${esc(rn)}</span>`:''}
         ${s.notes?`<span class="pill neutral">📝 ${esc(s.notes).slice(0,40)}${s.notes.length>40?'…':''}</span>`:''}
       </div>
@@ -663,12 +755,20 @@ function renderGear(){
 function renderStats(){
   const ss = store.sessions;
   const totalMin = ss.reduce((a,s)=>a+(+s.duration||0),0);
+  const totalCost = ss.reduce((a,s)=>a+(+s.cost||0),0);
   // 不足 1 小时按分钟显示，避免 1 分钟被四舍五入成 "0.0小时" 看起来像没记上
   const fmtHours = (min)=> min<60 ? `${min}<span class="unit">分钟</span>` : `${(min/60).toFixed(1).replace(/\.0$/,'')}<span class="unit">小时</span>`;
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const thisMonth = ss.filter(s=> new Date(s.date) >= monthStart);
-  const monthMin = thisMonth.reduce((a,s)=>a+(+s.duration||0),0);
+  // 金额去掉多余的尾零：40 → ¥40，33.5 → ¥33.5
+  const fmtMoney = (v)=> '¥'+String(+(v.toFixed(2)));
+  // 按月查看：选中的月份（空 = 本月）
+  const m = statMonthSel();
+  const parts = m.split('-').map(Number);
+  const monthArr = ss.filter(s=>(s.date||'').slice(0,7)===m);
+  const monthMin = monthArr.reduce((a,s)=>a+(+s.duration||0),0);
+  const monthCost = monthArr.reduce((a,s)=>a+(+s.cost||0),0);
+  const cur = new Date();
+  const isCur = m === cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
+  const mLabel = parts[0]+'年'+parts[1]+'月';
 
   // opponent counts
   const opp = {};
@@ -687,12 +787,20 @@ function renderStats(){
       <div class="l">累计时长</div>
     </div>
     <div class="stat">
-      <div class="n">${thisMonth.length}<span class="unit">次</span></div>
-      <div class="l">本月打球</div>
+      <div class="n">${fmtMoney(totalCost)}</div>
+      <div class="l">累计场地费</div>
+    </div>
+    <div class="stat">
+      <div class="n">${monthArr.length}<span class="unit">次</span></div>
+      <div class="l">${mLabel}打球${isCur?' · 本月':''}</div>
     </div>
     <div class="stat">
       <div class="n">${fmtHours(monthMin)}</div>
-      <div class="l">本月时长</div>
+      <div class="l">${mLabel}时长${isCur?' · 本月':''}</div>
+    </div>
+    <div class="stat">
+      <div class="n">${fmtMoney(monthCost)}</div>
+      <div class="l">${mLabel}场地费${isCur?' · 本月':''}</div>
     </div>`;
 
   const bars = document.getElementById('opponentBars');
@@ -728,9 +836,8 @@ function openSession(id){
   // racket options
   const sel = document.getElementById('s_racket');
   sel.innerHTML = '<option value="">不记录</option>' + store.rackets.map(r=>`<option value="${r.id}">${esc(r.name)}</option>`).join('');
-  // opponent datalist
-  const opps = [...new Set(store.sessions.map(s=>s.opponent).filter(Boolean))];
-  document.getElementById('opponentList').innerHTML = opps.map(o=>`<option value="${esc(o)}">`).join('');
+  // opponent datalist（来自对手库）
+  renderOpponentDatalist();
 
   if(id){
     const s = store.sessions.find(x=>x.id===id);
@@ -740,6 +847,7 @@ function openSession(id){
       document.getElementById('s_date').value = s.date||'';
       document.getElementById('s_opponent').value = s.opponent||'';
       document.getElementById('s_duration').value = s.duration||'';
+      document.getElementById('s_cost').value = (s.cost!=null) ? s.cost : '';
       document.getElementById('s_racket').value = s.racketId||'';
       document.getElementById('s_notes').value = s.notes||'';
     }
@@ -753,15 +861,29 @@ function openSession(id){
 document.getElementById('sessionForm').addEventListener('submit',e=>{
   e.preventDefault();
   const id = document.getElementById('s_id').value;
+  const costRaw = document.getElementById('s_cost').value.trim();
+  let cost = null;
+  if(costRaw!==''){
+    cost = parseFloat(costRaw);
+    if(isNaN(cost) || cost<0){
+      alert('场地费请填 0 或正数（元），不收场地费可以不填');
+      document.getElementById('s_cost').focus();
+      return;
+    }
+    cost = Math.round(cost*100)/100;
+  }
   const obj = {
     id: id||uid(),
     date: document.getElementById('s_date').value,
     opponent: document.getElementById('s_opponent').value.trim(),
     duration: parseInt(document.getElementById('s_duration').value)||0,
+    cost,
     racketId: document.getElementById('s_racket').value,
     notes: document.getElementById('s_notes').value.trim(),
     createdAt: id ? (store.sessions.find(x=>x.id===id)||{}).createdAt||Date.now() : Date.now()
   };
+  // 新对手自动进对手库
+  if(obj.opponent && !store.opponents.includes(obj.opponent)) store.opponents.push(obj.opponent);
   if(id){
     const i = store.sessions.findIndex(x=>x.id===id);
     store.sessions[i] = obj;
@@ -872,6 +994,11 @@ document.getElementById('f_reset').addEventListener('click',()=>{
   calDay='';
   renderCalendar(); renderSessions();
 });
+document.getElementById('stat_month').addEventListener('input',renderStats);
+document.getElementById('stat_month_reset').addEventListener('click',()=>{
+  document.getElementById('stat_month').value='';
+  renderStats();
+});
 
 /* ---------- Export / Import ---------- */
 document.getElementById('exportBtn').addEventListener('click',()=>{
@@ -895,10 +1022,17 @@ document.getElementById('fileInput').addEventListener('change',e=>{
       if(!confirm('导入会合并到当前数据。确定继续？')) { e.target.value=''; return; }
       const existingR = new Map(store.rackets.map(r=>[r.id,r]));
       const existingS = new Map(store.sessions.map(s=>[s.id,s]));
+      const oldSessionIds = new Set(existingS.keys());
       (data.rackets||[]).forEach(r=>{ if(r.id) existingR.set(r.id, r); });
       (data.sessions||[]).forEach(s=>{ if(s.id) existingS.set(s.id, s); });
       store.rackets = [...existingR.values()];
       store.sessions = [...existingS.values()];
+      // 对手库合并：并入备份里明确保存的对手 + 只看"新进来"的会话记录里出现的对手
+      // （本机已删除的对手，只要这次导入没带来 TA 的新记录，就不会被复活）
+      const seenOpp = new Set(store.opponents);
+      const addOpp = (k)=>{ k=String(k||'').trim(); if(k && !seenOpp.has(k)){ seenOpp.add(k); store.opponents.push(k); } };
+      (data.opponents||[]).forEach(addOpp);
+      (data.sessions||[]).forEach(s=>{ if(s.id && !oldSessionIds.has(s.id)) addOpp(s.opponent); });
       save(); renderAll();
       toast('导入成功');
     }catch(err){
@@ -915,7 +1049,12 @@ function esc(s){ return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;'
 
 /* ---------- boot ---------- */
 function renderAll(){ renderRestringBanner(); renderCalendar(); renderSessions(); renderGear(); renderStats(); }
-load(); renderAll();
+load();
+(function(){ // 统计月份默认选中本月
+  const d = new Date();
+  document.getElementById('stat_month').value = d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+})();
+renderAll();
 
 /* PWA：注册 service worker，实现离线可用（需 https 或 localhost 才生效） */
 if('serviceWorker' in navigator){
