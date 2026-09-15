@@ -189,6 +189,10 @@
   .stat.accent .n .unit{color:rgba(255,255,255,.75);}
 
   .recent h3{margin:24px 0 10px;font-size:16px;}
+  .fold-head{display:flex;align-items:center;gap:7px;border:0;background:none;padding:0;margin:24px 0 10px;font-family:inherit;font-weight:700;font-size:16px;color:var(--ink);cursor:pointer;}
+  .fold-head:hover{color:var(--accent);}
+  .fold-arrow{font-size:12px;color:var(--muted);transition:transform .15s;display:inline-block;}
+  .fold-head.collapsed .fold-arrow{transform:rotate(-90deg);}
   .bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;}
   .bar-row .name{width:90px;font-size:14px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .bar-track{flex:1;height:24px;background:#f0efe9;border-radius:6px;overflow:hidden;}
@@ -245,6 +249,9 @@
   .cal-day.today{box-shadow:inset 0 0 0 2px var(--accent);}
   .cal-day.has.today{box-shadow:inset 0 0 0 2px rgba(255,255,255,.85);}
   .cal-day.sel{background:#1b5e20;}
+  .cal-day.future{background:#fdd835;color:#4a3b00;font-weight:700;cursor:pointer;}
+  .cal-day.future:hover{filter:brightness(1.06);}
+  .cal-day.future.sel{background:#c9a227;}
 
   .banner{
     background:linear-gradient(135deg,#fff8e1,#fff3c4);
@@ -342,11 +349,11 @@
     </div>
     <div class="stat-grid" id="statGrid"></div>
     <div class="recent">
-      <h3>常一起打球的人</h3>
+      <button class="fold-head" type="button" id="fold_opp" onclick="toggleFold('opp')"><span class="fold-arrow">▾</span>常一起打球的人</button>
       <div id="opponentBars"></div>
     </div>
     <div class="recent">
-      <h3>最近 10 次打球</h3>
+      <button class="fold-head" type="button" id="fold_recent" onclick="toggleFold('recent')"><span class="fold-arrow">▾</span>最近 10 次打球</button>
       <div id="recentSessions"></div>
     </div>
   </section>
@@ -604,10 +611,11 @@ function renderCalendar(){
   for(let d=1;d<=daysIn;d++){
     const ds = m+'-'+String(d).padStart(2,'0');
     const n = byDate[ds]||0;
-    const cls = 'cal-day'+(n?' has':'')+(ds===today?' today':'')+(calDay===ds?' sel':'');
-    cells += n
-      ? `<div class="${cls}" title="${n} 次记录" onclick="pickDay('${ds}')">${d}</div>`
-      : `<div class="${cls}">${d}</div>`;
+    // 未来日期的场次标黄；到了当天自然变回统一的绿色（has）
+    const isFuture = n && ds > today;
+    const cls = 'cal-day'+(n?(isFuture?' future':' has'):'')+(ds===today?' today':'')+(calDay===ds?' sel':'');
+    const title = n ? ` title="${n} 次记录${isFuture?' · 未打':''}"` : '';
+    cells += `<div class="${cls}"${title} onclick="pickDay('${ds}')">${d}</div>`;
   }
   const trailing = (7-(startWd+daysIn)%7)%7;
   for(let i=0;i<trailing;i++) cells += `<div class="cal-day"></div>`;
@@ -681,8 +689,8 @@ function renderSessions(){
 
   if(!arr.length){
     list.innerHTML = `<div class="empty"><div class="big">🎾</div>
-      <p>${q?'没有匹配的记录':'还没有打球记录'}</p>
-      <p>${q?'':'点右下角 + 记第一次吧'}</p>
+      <p>${q?'没有匹配的记录':(calDay?fmtDate(calDay)+' 还没有记录':'还没有打球记录')}</p>
+      <p>${(q||calDay)?'':'点右下角 + 记第一次吧'}</p>
       ${q?'':'<button class="primary" onclick="openSession()">记一次打球</button>'}
     </div>`;
     return;
@@ -752,6 +760,9 @@ function renderGear(){
 }
 
 /* ---------- Render: Stats ---------- */
+/* 统计页两个列表的折叠状态（折叠时只显示前三条） */
+const folds = {opp:false, recent:false};
+function toggleFold(k){ folds[k]=!folds[k]; renderStats(); }
 function renderStats(){
   const ss = store.sessions;
   const totalMin = ss.reduce((a,s)=>a+(+s.duration||0),0);
@@ -768,7 +779,7 @@ function renderStats(){
   const monthCost = monthArr.reduce((a,s)=>a+(+s.cost||0),0);
   const cur = new Date();
   const isCur = m === cur.getFullYear()+'-'+String(cur.getMonth()+1).padStart(2,'0');
-  const mLabel = parts[0]+'年'+parts[1]+'月';
+  const mLabel = parts[1]+'月';
 
   // opponent counts
   const opp = {};
@@ -807,12 +818,14 @@ function renderStats(){
   if(!oppArr.length){
     bars.innerHTML = `<p class="hint-line">还没有一起打球的记录。</p>`;
   }else{
-    bars.innerHTML = oppArr.slice(0,6).map(([name,c])=>
+    const shownOpp = folds.opp ? oppArr.slice(0,3) : oppArr.slice(0,6);
+    bars.innerHTML = shownOpp.map(([name,c])=>
       `<div class="bar-row">
         <div class="name" title="${esc(name)}">${esc(name)}</div>
         <div class="bar-track"><div class="bar-fill" style="width:${(c/maxOpp*100).toFixed(1)}%"></div></div>
         <div class="cnt">${c}</div>
-      </div>`).join('');
+      </div>`).join('')
+      + (folds.opp && oppArr.length>shownOpp.length ? `<div class="hint-line">还有 ${oppArr.length-shownOpp.length} 位，点标题展开</div>` : '');
   }
 
   const recent = document.getElementById('recentSessions');
@@ -820,12 +833,16 @@ function renderStats(){
   if(!recentArr.length){
     recent.innerHTML = `<p class="hint-line">暂无记录。</p>`;
   }else{
-    recent.innerHTML = recentArr.map(s=>`<div class="bar-row">
+    const shownRecent = folds.recent ? recentArr.slice(0,3) : recentArr;
+    recent.innerHTML = shownRecent.map(s=>`<div class="bar-row">
       <div class="name" title="${esc(s.opponent||'')}">${esc(s.opponent||'—')}</div>
       <div class="bar-track"><div class="bar-fill" style="width:${Math.min(100,(s.duration/120*100)).toFixed(1)}%;background:linear-gradient(90deg,#c6ff3d,#9ccc65)"></div></div>
       <div class="cnt">${fmtDuration(s.duration)}</div>
-    </div>`).join('');
+    </div>`).join('')
+      + (folds.recent && recentArr.length>shownRecent.length ? `<div class="hint-line">还有 ${recentArr.length-shownRecent.length} 条，点标题展开</div>` : '');
   }
+  document.getElementById('fold_opp').classList.toggle('collapsed', folds.opp);
+  document.getElementById('fold_recent').classList.toggle('collapsed', folds.recent);
 }
 
 /* ---------- Session form ---------- */
@@ -853,7 +870,8 @@ function openSession(id){
     }
   }else{
     document.getElementById('sessionFormTitle').textContent = '记一次打球';
-    document.getElementById('s_date').value = todayStr();
+    // 日历点选了某天时，新记录默认就是那天
+    document.getElementById('s_date').value = calDay || todayStr();
   }
   openScrim('sessionScrim');
   setTimeout(()=>document.getElementById('s_opponent').focus(),120);
