@@ -1,14 +1,39 @@
-/* 记录编辑页：字段样式在 app.wxss，这里放 chips、label-row 和管理对手弹层 */
+/* 记录编辑页：字段样式在 app.wxss，「和谁打」是可编辑下拉（输入框 + 点按弹出名单），
+   这里放下拉名单、label-row 和管理对手弹层 */
 .form-wrap { padding-bottom: 80rpx; }
-.chips { display: flex; flex-wrap: wrap; gap: 14rpx; margin: -6rpx 0 28rpx; }
-.chip {
+
+/* 「和谁打」可编辑下拉：输入照常可打字，点按在输入框下方弹出候选名单；
+   透明遮罩负责「点其它地方收起名单」，名单浮在遮罩之上 */
+.opp-select { position: relative; }
+.opp-drop-mask {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 20;
+}
+.opp-drop {
+  position: absolute;
+  top: calc(100% + 12rpx);
+  left: 0; right: 0;
+  z-index: 30;
   background: #fff;
   border: 1rpx solid #e6e4dc;
-  color: #5d6560;
-  padding: 10rpx 24rpx;
-  border-radius: 999rpx;
-  font-size: 25rpx;
+  border-radius: 20rpx;
+  box-shadow: 0 12rpx 32rpx rgba(0, 0, 0, 0.14);
+  overflow: hidden;
 }
+.opp-drop-scroll { max-height: 420rpx; }
+.opp-drop-item {
+  padding: 22rpx 24rpx;
+  font-size: 30rpx;
+  color: #1f2421;
+  border-bottom: 1rpx solid #f0efe9;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.opp-drop-item:last-child { border-bottom: 0; }
+.opp-drop-item.on { color: #2e7d32; font-weight: 700; }
+.opp-drop-empty { padding: 22rpx 24rpx; font-size: 26rpx; color: #9aa093; }
 
 /* 「和谁打」标签行：左边 label，右边「管理对手」入口 */
 .label-row {

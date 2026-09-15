@@ -14,16 +14,21 @@
         <view class="label">和谁打</view>
         <view class="link-btn" hover-class="btn-hover" bindtap="openOppManager">管理对手</view>
       </view>
-      <input class="input" value="{{opponent}}" bindinput="onOpponent" placeholder="对手 / 球友" placeholder-class="ph" />
+      <view class="opp-select">
+        <input class="input" value="{{opponent}}" bindinput="onOpponent" bindtap="openOppDrop" placeholder="输入 / 选择对手" placeholder-class="ph" />
+        <view wx:if="{{oppDropOpen}}" class="opp-drop-mask" bindtap="closeOppDrop" catchtouchmove="noop"></view>
+        <view wx:if="{{oppDropOpen}}" class="opp-drop">
+          <scroll-view scroll-y class="opp-drop-scroll">
+            <view wx:for="{{oppDropList}}" wx:key="*this" class="opp-drop-item {{item === opponent ? 'on' : ''}}" hover-class="btn-hover" catchtap="pickOpp" data-name="{{item}}">{{item}}</view>
+            <view wx:if="{{!oppDropList.length}}" class="opp-drop-empty">没有匹配的对手，直接输入名字即可</view>
+          </scroll-view>
+        </view>
+      </view>
     </view>
     <view class="field">
       <view class="label">玩了多久（分钟）</view>
       <input class="input" type="number" value="{{duration}}" bindinput="onDuration" placeholder="如 90" placeholder-class="ph" />
     </view>
-  </view>
-
-  <view class="chips" wx:if="{{chips.length}}">
-    <view class="chip" wx:for="{{chips}}" wx:key="*this" data-v="{{item}}" bindtap="pickChip">{{item}}</view>
   </view>
 
   <view class="row">

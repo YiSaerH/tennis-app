@@ -12,7 +12,9 @@ Page({
     racketIndex: 0,
     racketNames: [],  // picker 选项：['不记录', ...拍子名]
     rackets: [],      // [{id, name}]，racketIndex-1 对应
-    chips: [],        // 对手库里的对手，点一下快速填入（网页版用 datalist）
+    opponents: [],    // 对手库：下拉候选来源，保存记录后自动入库
+    oppDropOpen: false, // 「和谁打」下拉名单是否展开
+    oppDropList: [],    // 下拉当前显示的候选（输入时按关键字过滤）
     oppOpen: false,   // 管理对手弹层
     oppRows: [],      // 弹层里的对手行：[{name, cnt}]
     editing: false
@@ -27,7 +29,7 @@ Page({
       date: store.todayStr(),
       racketNames: names,
       rackets: rackets,
-      chips: st.opponents.slice(0, 12)
+      opponents: st.opponents
     };
 
     if (options.id) {
@@ -52,8 +54,25 @@ Page({
   },
 
   onDate(e) { this.setData({ date: e.detail.value }); },
-  onOpponent(e) { this.setData({ opponent: e.detail.value }); },
-  pickChip(e) { this.setData({ opponent: e.currentTarget.dataset.v }); },
+  onOpponent(e) {
+    const v = e.detail.value;
+    const kw = v.trim();
+    this.setData({
+      opponent: v,
+      // 边输入边过滤候选；关键字清空则显示全部
+      oppDropList: kw
+        ? this.data.opponents.filter(function (o) { return o.indexOf(kw) !== -1; })
+        : this.data.opponents
+    });
+  },
+  openOppDrop() {
+    // 点按展开时给完整名单，方便换人
+    this.setData({ oppDropOpen: true, oppDropList: this.data.opponents });
+  },
+  closeOppDrop() { this.setData({ oppDropOpen: false }); },
+  pickOpp(e) {
+    this.setData({ opponent: e.currentTarget.dataset.name, oppDropOpen: false });
+  },
   onDuration(e) { this.setData({ duration: e.detail.value }); },
   onCost(e) { this.setData({ cost: e.detail.value }); },
   onRacket(e) { this.setData({ racketIndex: +e.detail.value }); },
@@ -88,9 +107,10 @@ Page({
       success(res) {
         if (!res.confirm) return;
         store.deleteOpponent(name);
+        const left = store.getStore().opponents;
         that.setData({
           oppRows: that.buildOppRows(),
-          chips: store.getStore().opponents.slice(0, 12)
+          opponents: left
         });
         wx.showToast({ title: '已从候选名单移除', icon: 'none' });
       }
