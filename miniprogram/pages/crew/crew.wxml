@@ -1,0 +1,52 @@
+<view class="page-head">
+  <view class="h1">球友</view>
+  <view class="sub">附近的球场哪里有人</view>
+</view>
+
+<view class="card">
+  <view class="row">
+    <view class="row-main">
+      <view class="row-title">在球友地图上显示我</view>
+      <view class="row-sub">只上传约 1 公里的网格点，不上传精确位置</view>
+    </view>
+    <switch checked="{{shareLocation}}" bindchange="toggleShare" color="#2e7d32" />
+  </view>
+  <view class="checkin-line">
+    <view wx:if="{{checkinLeft}}" class="pill">{{checkinLeft}}</view>
+    <view class="btn mini" hover-class="btn-hover" bindtap="checkin">📍 我在球场</view>
+  </view>
+</view>
+
+<view wx:if="{{demo}}" class="banner">🧪 演示数据：部署云函数后显示真实球友（见 cloudfunctions/README.md）</view>
+
+<map
+  class="crew-map"
+  latitude="{{center.latitude}}"
+  longitude="{{center.longitude}}"
+  scale="11"
+  circles="{{circles}}"
+></map>
+
+<view class="legend">
+  <view class="lg"><view class="dot" style="background:#66bb6a"></view>1 人</view>
+  <view class="lg"><view class="dot" style="background:#f57c00"></view>2-3 人</view>
+  <view class="lg"><view class="dot" style="background:#e53935"></view>4 人以上</view>
+</view>
+
+<view class="card">
+  <view class="card-title">饰品雷达</view>
+  <view class="hint-line">扫描附近 15 秒，发现其他持有饰品的球友时双方灯一起闪</view>
+  <view class="btn primary block {{radarState === 'scanning' ? 'disabled' : ''}}" hover-class="btn-hover" bindtap="radarScan">
+    {{radarState === 'scanning' ? '扫描中…' : radarState === 'found' ? '发现球友！' : radarState === 'none' ? '附近没有球友' : '🔍 扫一扫附近的球友'}}
+  </view>
+</view>
+
+<view class="card link-card" hover-class="btn-hover" bindtap="goCharm">
+  <view class="row">
+    <view class="row-main">
+      <view class="row-title">{{charmName || '我的饰品'}}</view>
+      <view class="row-sub">灯效 · 亮度 · 颜色 · 防丢提醒</view>
+    </view>
+    <view class="pill {{charmConnected ? 'pill-on' : ''}}">{{charmConnected ? '已连接' : '未绑定'}}</view>
+  </view>
+</view>

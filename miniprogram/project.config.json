@@ -2,6 +2,7 @@
   "compileType": "miniprogram",
   "appid": "wx8ed946a8675101e4",
   "projectname": "tennis-log-miniprogram",
+  "cloudfunctionRoot": "cloudfunctions/",
   "setting": {
     "es6": true,
     "enhance": true,

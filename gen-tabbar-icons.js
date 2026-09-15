@@ -62,6 +62,13 @@ function inSeg(x, y, ax, ay, bx, by, w) {
   const r = w / 2;
   return dx * dx + dy * dy <= r * r;
 }
+/* 三角形内部（同侧法） */
+function inTri(x, y, ax, ay, bx, by, cx, cy) {
+  const d1 = (x - bx) * (ay - by) - (ax - bx) * (y - by);
+  const d2 = (x - cx) * (by - cy) - (bx - cx) * (y - cy);
+  const d3 = (x - ax) * (cy - ay) - (cx - ax) * (y - ay);
+  return !(((d1 < 0) || (d2 < 0) || (d3 < 0)) && ((d1 > 0) || (d2 > 0) || (d3 > 0)));
+}
 
 /* ---- 三个图标 ---- */
 /* 记录：日历（圆角外框 + 顶部两个装订柱 + 表头线 + 三个日期点） */
@@ -93,6 +100,12 @@ function shapeStats(x, y) {
   if (inRR(x, y, 55, 16, 69, 66, 6)) return true;
   return false;
 }
+/* 球友：地图定位大头针（圆环头 + 三角尖尾） */
+function shapeCrew(x, y) {
+  if (inDisk(x, y, 40.5, 33, 21) && !inDisk(x, y, 40.5, 33, 10)) return true;
+  if (inTri(x, y, 28, 48, 53, 48, 40.5, 73)) return true;
+  return false;
+}
 
 /* ---- 渲染：3×3 超采样抗锯齿，输出彩色描边 ---- */
 const SIZE = 81, SS = 3;
@@ -120,7 +133,8 @@ const GREEN = [46, 125, 50];   // #2e7d32（tabBar 选中）
 const icons = {
   'tab-records': shapeRecords,
   'tab-gear': shapeGear,
-  'tab-stats': shapeStats
+  'tab-stats': shapeStats,
+  'tab-crew': shapeCrew
 };
 
 const dir = path.join(__dirname, 'miniprogram', 'images');

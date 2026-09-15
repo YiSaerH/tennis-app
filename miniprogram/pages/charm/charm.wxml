@@ -1,0 +1,81 @@
+<view class="page-head">
+  <view class="h1">我的饰品</view>
+  <view class="sub">网球记智能饰品 · 灯效与防丢</view>
+</view>
+
+<block wx:if="{{state !== 'connected'}}">
+  <view class="card empty-card">
+    <view class="empty-emoji">🎾</view>
+    <view class="empty-text">{{state === 'scanning' ? '正在搜索附近的饰品…' : '还没绑定饰品'}}</view>
+    <view class="hint-line">长按饰品按键开机，靠近手机后点击下方按钮</view>
+    <view class="btn primary block" hover-class="btn-hover" bindtap="bindCharm">
+      {{state === 'scanning' ? '搜索中…' : '🔗 搜索并绑定饰品'}}
+    </view>
+  </view>
+</block>
+
+<block wx:else>
+  <view class="card">
+    <view class="row">
+      <view class="row-main" bindtap="renameCharm">
+        <view class="row-title">{{charmName}} <text class="edit-mark">✏️</text></view>
+        <view class="row-sub">点击可修改昵称</view>
+      </view>
+      <view class="pill">{{battery || '…'}}</view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">灯效</view>
+    <view class="mode-grid">
+      <view
+        wx:for="{{modes}}"
+        wx:key="v"
+        class="mode-item {{mode === item.v ? 'on' : ''}}"
+        data-v="{{item.v}}"
+        hover-class="btn-hover"
+        bindtap="pickMode"
+      >{{item.label}}</view>
+    </view>
+    <view class="btn mini block" hover-class="btn-hover" bindtap="flash">⚡ 闪一下</view>
+  </view>
+
+  <view class="card">
+    <view class="card-title">亮度</view>
+    <slider
+      min="10"
+      max="255"
+      value="{{brightness}}"
+      activeColor="#2e7d32"
+      block-size="24"
+      bindchanging="onBrightDrag"
+      bindchange="onBrightChange"
+    />
+  </view>
+
+  <view class="card">
+    <view class="card-title">颜色</view>
+    <view class="swatches">
+      <view
+        wx:for="{{colors}}"
+        wx:key="hex"
+        class="swatch {{color === item.hex ? 'on' : ''}}"
+        style="background: {{item.hex}}"
+        data-hex="{{item.hex}}"
+        bindtap="pickColor"
+      ></view>
+    </view>
+  </view>
+
+  <view class="card">
+    <view class="row">
+      <view class="row-main">
+        <view class="row-title">防丢提醒</view>
+        <view class="row-sub">饰品意外断开连接时弹窗提醒</view>
+      </view>
+      <switch checked="{{lostAlert}}" bindchange="toggleLostAlert" color="#2e7d32" />
+    </view>
+  </view>
+
+  <view class="btn mini danger block" hover-class="btn-hover" bindtap="unbind">断开连接</view>
+</block>

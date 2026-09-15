@@ -5,7 +5,7 @@
 
 const KEY = 'tennis_log_v1';
 
-let store = { rackets: [], sessions: [] };
+let store = { rackets: [], sessions: [], settings: defaultSettings() };
 
 /* ---------- 存储 ---------- */
 function load() {
@@ -17,6 +17,8 @@ function load() {
   }
   if (!store.rackets) store.rackets = [];
   if (!store.sessions) store.sessions = [];
+  /* 老数据没有 settings / 新版本加了字段，都补默认值 */
+  store.settings = Object.assign(defaultSettings(), store.settings || {});
   return store;
 }
 function save() {
@@ -191,6 +193,30 @@ function computeStats() {
   };
 }
 
+/* ---------- 设置（饰品 / 球友共享；随备份一起导出，网页版会忽略该字段） ---------- */
+function defaultSettings() {
+  return {
+    shareLocation: false,  // 球友地图共享（默认关，开了才上报）
+    lastCheckinAt: 0,      // 上次球场打卡时间（打卡在地图上保留 2 小时）
+    charmName: '',         // 饰品昵称
+    lightMode: 2,          // 灯效模式（与 ble-protocol 的 MODES 对应：0关 1常亮 2呼吸 3心跳 4弹跳 5彩虹 6雷达）
+    brightness: 90,        // 亮度 0-255
+    color: '#ccff00',      // 灯色（网球黄绿）
+    lostAlert: true        // 饰品断连时防丢提醒
+  };
+}
+function updateSettings(patch) {
+  store.settings = Object.assign(defaultSettings(), store.settings || {}, patch || {});
+  save();
+  return store.settings;
+}
+function getSettings() {
+  if (!store.settings) {
+    store.settings = defaultSettings();
+  }
+  return store.settings;
+}
+
 /* ---------- 导出 / 导入（与网页版 JSON 互通） ---------- */
 function exportData() {
   return JSON.stringify(Object.assign({}, store, { exportedAt: new Date().toISOString() }));
@@ -229,6 +255,9 @@ module.exports = {
   currentMonth: currentMonth,
   racketName: racketName,
   stringingInfo: stringingInfo,
+  defaultSettings: defaultSettings,
+  updateSettings: updateSettings,
+  getSettings: getSettings,
   buildCalendar: buildCalendar,
   shiftMonth: shiftMonth,
   computeStats: computeStats,

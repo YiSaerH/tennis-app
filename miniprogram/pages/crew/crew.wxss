@@ -1,0 +1,73 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20rpx;
+}
+
+.row-main {
+  flex: 1;
+  min-width: 0;
+}
+
+.row-title {
+  font-size: 30rpx;
+  color: #1f2421;
+  font-weight: 500;
+}
+
+.row-sub {
+  font-size: 24rpx;
+  color: #8a8f8a;
+  margin-top: 6rpx;
+}
+
+.crew-map {
+  width: 100%;
+  height: 640rpx;
+  border-radius: 28rpx;
+  border: 1rpx solid #e6e4dc;
+  box-sizing: border-box;
+}
+
+.legend {
+  display: flex;
+  justify-content: center;
+  gap: 32rpx;
+  margin-top: 16rpx;
+}
+
+.lg {
+  display: flex;
+  align-items: center;
+  gap: 10rpx;
+  font-size: 24rpx;
+  color: #6f746f;
+}
+
+.dot {
+  width: 20rpx;
+  height: 20rpx;
+  border-radius: 50%;
+}
+
+.checkin-line {
+  display: flex;
+  align-items: center;
+  gap: 16rpx;
+  margin-top: 20rpx;
+}
+
+.link-card {
+  padding: 28rpx 32rpx;
+}
+
+.pill-on {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.btn.disabled {
+  opacity: 0.6;
+  pointer-events: none;
+}

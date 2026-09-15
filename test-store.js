@@ -212,5 +212,36 @@ console.log('\n[7] 导出 / 导入');
   ok(threw, '非法 JSON 抛错');
 }
 
+/* ---- 8. 设置（饰品 / 球友共享） ---- */
+console.log('\n[8] 设置（饰品 / 球友共享）');
+{
+  const s = fresh();
+  s.load();
+  const def = s.defaultSettings();
+  eq(def.shareLocation, false, '默认不共享位置（隐私默认关）');
+  eq(def.lostAlert, true, '默认开防丢提醒');
+  eq(def.lightMode, 2, '默认呼吸灯');
+  eq(def.color, '#ccff00', '默认网球黄绿');
+
+  eq(s.getSettings().charmName, '', '空库 getSettings 走默认值');
+  s.updateSettings({ charmName: '小绿', brightness: 180 });
+  eq(s.getSettings().charmName, '小绿', 'updateSettings 写入昵称');
+  eq(s.getSettings().brightness, 180, 'updateSettings 写入亮度');
+  eq(s.getSettings().lostAlert, true, '没动过的字段保持默认');
+
+  // 老数据（无 settings 字段）升级：load 时补默认值
+  mem[require(path.join(__dirname, 'miniprogram', 'utils', 'store.js')).KEY] = {
+    rackets: [], sessions: []
+  };
+  delete require.cache[require.resolve(STORE_PATH)];
+  const s2 = require(STORE_PATH);
+  s2.load();
+  eq(s2.getSettings().shareLocation, false, '老备份无 settings → load 补默认值');
+
+  // 设置随备份导出
+  const parsed = JSON.parse(s2.exportData());
+  ok(parsed.settings && parsed.settings.lightMode === 2, 'settings 随 exportData 导出');
+}
+
 console.log('\n结果：' + passed + ' 通过，' + failed + ' 失败');
 process.exit(failed ? 1 : 0);

@@ -4,8 +4,18 @@
     "pages/gear/gear",
     "pages/stats/stats",
     "pages/session-edit/session-edit",
-    "pages/gear-edit/gear-edit"
+    "pages/gear-edit/gear-edit",
+    "pages/crew/crew",
+    "pages/charm/charm"
   ],
+  "requiredPrivateInfos": [
+    "getFuzzyLocation"
+  ],
+  "permission": {
+    "scope.getFuzzyLocation": {
+      "desc": "用于在球友地图上显示你和附近球友的密度（只上传约 1 公里的网格点，绝不上传精确位置）"
+    }
+  },
   "window": {
     "navigationBarBackgroundColor": "#f7f7f4",
     "navigationBarTitleText": "网球记",
@@ -29,6 +39,12 @@
         "text": "我的拍子",
         "iconPath": "images/tab-gear.png",
         "selectedIconPath": "images/tab-gear-active.png"
+      },
+      {
+        "pagePath": "pages/crew/crew",
+        "text": "球友",
+        "iconPath": "images/tab-crew.png",
+        "selectedIconPath": "images/tab-crew-active.png"
       },
       {
         "pagePath": "pages/stats/stats",
