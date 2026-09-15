@@ -6,22 +6,40 @@
     </view>
   </view>
 
+  <!-- 按月翻看：‹ 月份 › 本月 -->
+  <view class="filter-bar stat-filter">
+    <view class="cal-nav" hover-class="btn-hover" bindtap="statShift" data-d="-1">‹</view>
+    <picker class="f-picker" mode="date" fields="month" value="{{month}}" bindchange="onMonthChange">
+      <view class="f-item">{{monthLabel}}</view>
+    </picker>
+    <view class="cal-nav" hover-class="btn-hover" bindtap="statShift" data-d="1">›</view>
+    <view class="mini f-reset" hover-class="btn-hover" bindtap="resetMonth">本月</view>
+  </view>
+
   <view class="stat-grid">
     <view class="stat accent">
       <view class="n">{{totalN}}<text class="unit">次</text></view>
       <view class="l">总打球次数</view>
     </view>
-    <view class="stat" style="width: 339rpx; height: 172rpx; display: block; box-sizing: border-box">
+    <view class="stat">
       <view class="n">{{totalTime.n}}<text class="unit">{{totalTime.unit}}</text></view>
       <view class="l">累计时长</view>
     </view>
     <view class="stat">
-      <view class="n">{{monthCount}}<text class="unit">次</text></view>
-      <view class="l">本月打球</view>
+      <view class="n">{{totalCost}}</view>
+      <view class="l">累计场地费</view>
     </view>
-    <view class="stat" style="width: 339rpx; height: 172rpx; display: block; box-sizing: border-box">
+    <view class="stat">
+      <view class="n">{{monthCount}}<text class="unit">次</text></view>
+      <view class="l">{{monthLabel}}打球{{curTag}}</view>
+    </view>
+    <view class="stat">
       <view class="n">{{monthTime.n}}<text class="unit">{{monthTime.unit}}</text></view>
-      <view class="l">本月时长</view>
+      <view class="l">{{monthLabel}}时长{{curTag}}</view>
+    </view>
+    <view class="stat">
+      <view class="n">{{monthCost}}</view>
+      <view class="l">{{monthLabel}}场地费{{curTag}}</view>
     </view>
   </view>
 

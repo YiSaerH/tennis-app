@@ -1,4 +1,4 @@
-/* 记录编辑页：字段样式在 app.wxss，这里放对手快速点选的 chips */
+/* 记录编辑页：字段样式在 app.wxss，这里放 chips、label-row 和管理对手弹层 */
 .form-wrap { padding-bottom: 80rpx; }
 .chips { display: flex; flex-wrap: wrap; gap: 14rpx; margin: -6rpx 0 28rpx; }
 .chip {
@@ -9,3 +9,53 @@
   border-radius: 999rpx;
   font-size: 25rpx;
 }
+
+/* 「和谁打」标签行：左边 label，右边「管理对手」入口 */
+.label-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16rpx;
+  margin-bottom: 12rpx;
+}
+.label-row .label { margin-bottom: 0; }
+.label-row .link-btn { align-self: center; margin-top: 0; }
+
+/* 管理对手弹层：底部抽屉（与网页版 sheet 同视觉） */
+.scrim {
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 200;
+  background: rgba(20, 24, 20, 0.42);
+  display: flex;
+  align-items: flex-end;
+}
+.sheet {
+  width: 100%;
+  box-sizing: border-box;
+  background: #fff;
+  border-radius: 32rpx 32rpx 0 0;
+  padding: 36rpx 32rpx calc(36rpx + env(safe-area-inset-bottom));
+}
+.sheet-title { font-size: 36rpx; font-weight: 800; }
+.sheet-hint { color: #6b7269; font-size: 25rpx; margin: 8rpx 0 20rpx; }
+.opp-scroll { max-height: 50vh; overflow-y: auto; }
+.opp-row {
+  display: flex;
+  align-items: center;
+  gap: 20rpx;
+  padding: 18rpx 2rpx;
+  border-bottom: 1rpx dashed #e6e4dc;
+}
+.opp-row:last-child { border-bottom: 0; }
+.opp-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 29rpx;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.opp-cnt { color: #6b7269; font-size: 25rpx; white-space: nowrap; }
+.opp-del { flex-shrink: 0; padding: 10rpx 24rpx; }

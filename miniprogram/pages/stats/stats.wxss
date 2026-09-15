@@ -16,6 +16,42 @@
 .stat.accent .l { color: rgba(255, 255, 255, 0.8); }
 .stat.accent .unit { color: rgba(255, 255, 255, 0.75); }
 
+/* 按月翻看栏（样式与打球记录页的筛选栏一致，页面样式不跨页所以复制一份） */
+.filter-bar {
+  display: flex;
+  gap: 16rpx;
+  margin: 0 0 24rpx;
+  align-items: center;
+}
+.f-picker { flex: 1; min-width: 0; }
+.f-item {
+  border: 1rpx solid #e6e4dc;
+  border-radius: 20rpx;
+  background: #fff;
+  padding: 18rpx 20rpx;
+  font-size: 28rpx;
+  color: #1f2421;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+}
+.f-reset { flex-shrink: 0; padding: 18rpx 28rpx; }
+.cal-nav {
+  border: 1rpx solid #e6e4dc;
+  background: #fff;
+  width: 56rpx;
+  height: 56rpx;
+  border-radius: 14rpx;
+  font-size: 26rpx;
+  line-height: 1;
+  color: #6b7269;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
 /* 排行条 */
 .h3 { margin: 40rpx 0 20rpx; font-size: 32rpx; font-weight: 700; }
 /* 标题行：标题 + 右侧「展开/收起」胶囊按钮 */

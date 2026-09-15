@@ -67,6 +67,7 @@ Page({
         dateStr: store.fmtDate(s.date),
         durationStr: store.fmtDuration(s.duration),
         racketName: store.racketName(s.racketId),
+        costText: s.cost != null ? '💰 ¥' + s.cost : '',
         notesShort: notes ? (notes.length > 40 ? notes.slice(0, 40) + '…' : notes) : ''
       };
     });

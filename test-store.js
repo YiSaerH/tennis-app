@@ -212,5 +212,104 @@ console.log('\n[7] 导出 / 导入');
   ok(threw, '非法 JSON 抛错');
 }
 
+/* ---- 8. 对手库 ---- */
+console.log('\n[8] 对手库（候选名单）');
+{
+  // 老数据升级：存储里没有 opponents 字段，load 时历史对手自动收进名单
+  const s = fresh();
+  mem[s.KEY] = { rackets: [], sessions: [
+    { id: 'a', date: '2026-01-05', opponent: '老张', duration: 60 },
+    { id: 'b', date: '2026-01-06', opponent: '老张', duration: 60 },
+    { id: 'c', date: '2026-01-07', opponent: '小王', duration: 90 }
+  ] };
+  s.load();
+  eq(s.getStore().opponents, ['老张', '小王'], '老数据升级：历史对手去重后进名单');
+  ok(s.getStore().opponentsMigrated === true, '迁移标记写入');
+
+  // 再 load 一次不重复收（模拟已删的对手不复活）
+  s.deleteOpponent('老张');
+  eq(s.getStore().opponents, ['小王'], '从名单移除');
+  eq(s.getStore().sessions.filter(function (x) { return x.opponent === '老张'; }).length, 2, '历史记录保留不受影响');
+  s.load();
+  eq(s.getStore().opponents, ['小王'], '再次 load 不把已删的对手加回来');
+
+  // 保存记录时新对手自动进名单；删掉的对手再保存一次会回来
+  s.upsertSession({ date: '2026-02-01', opponent: '小李', duration: 60 });
+  eq(s.getStore().opponents, ['小王', '小李'], '保存时新对手自动进名单');
+  s.upsertSession({ id: 'a', date: '2026-01-05', opponent: '老张', duration: 60 });
+  eq(s.getStore().opponents, ['小王', '小李', '老张'], '再保存已删对手会重新入名单');
+}
+
+/* ---- 9. 场地费 + 按月统计 ---- */
+console.log('\n[9] 场地费与按月统计');
+{
+  const s = fresh();
+  s.load();
+  s.upsertSession({ date: '2026-01-05', opponent: '老张', duration: 90, cost: 40 });
+  s.upsertSession({ date: '2026-01-20', opponent: '小王', duration: 60, cost: 33.5 });
+  s.upsertSession({ date: '2026-02-03', opponent: '老张', duration: 120, cost: null });
+  s.upsertSession({ date: '2026-02-10', opponent: '小李', duration: 30 });   // 没填场地费
+
+  const st1 = s.computeStats('2026-01');
+  eq(st1.monthCount, 2, '1 月次数');
+  eq(st1.monthMin, 150, '1 月分钟');
+  ok(Math.abs(st1.monthCost - 73.5) < 1e-9, '1 月场地费 73.5');
+  const st2 = s.computeStats('2026-02');
+  eq(st2.monthCount, 2, '2 月次数');
+  eq(st2.monthCost, 0, '2 月场地费 0（未填按 0）');
+  ok(Math.abs(st1.totalCost - 73.5) < 1e-9, '累计场地费');
+  eq(st1.total, 4, '总次数（跨月累计）');
+
+  eq(s.fmtMoney(40), '¥40', 'fmtMoney 去尾零');
+  eq(s.fmtMoney(33.5), '¥33.5', 'fmtMoney 保留一位小数');
+  eq(s.fmtMoney(0), '¥0', 'fmtMoney(0)');
+  eq(s.fmtMoney(33.333), '¥33.33', 'fmtMoney 两位小数');
+
+  // 默认参数 = 本月
+  const stCur = s.computeStats();
+  ok(stCur.month === s.currentMonth(), '不传月份默认本月');
+}
+
+/* ---- 10. 导入合并对手库（不复活已删） ---- */
+console.log('\n[10] 导入合并对手库');
+{
+  const s = fresh();
+  s.load();
+  s.upsertSession({ date: '2026-01-05', opponent: '老张', duration: 60 });  // id 自动生成
+  const zhangId = s.getStore().sessions[0].id;
+  s.upsertSession({ date: '2026-01-06', opponent: '小王', duration: 60 });
+  s.deleteOpponent('小王');   // 用户已把小王从名单删掉
+
+  // 备份：显式带 opponents（含小王），sessions 里既有老记录（同 id）也有新记录
+  const backup = JSON.stringify({
+    rackets: [],
+    opponents: ['小王', '备份名单新人'],
+    sessions: [
+      { id: zhangId, date: '2026-01-05', opponent: '老张', duration: 60 },       // 老记录：对手不再进名单
+      { id: 's_new', date: '2026-03-01', opponent: '备份新记录的对手', duration: 60 }
+    ]
+  });
+  s.importData(backup);
+  eq(s.getStore().opponents, ['老张', '小王', '备份名单新人', '备份新记录的对手'],
+    '备份名单 + 备份新增记录的对手进名单');
+  ok(s.getStore().opponents.indexOf('小王') >= 0, '备份显式名单里的小王恢复（用户自己导回的）');
+
+  // 没有显式名单时，老记录的对手不该复活
+  const s2 = fresh();
+  s2.load();
+  s2.upsertSession({ date: '2026-01-05', opponent: '老张', duration: 60 });
+  const oldId = s2.getStore().sessions[0].id;
+  s2.deleteOpponent('老张');
+  s2.importData(JSON.stringify({
+    rackets: [],
+    sessions: [{ id: oldId, date: '2026-01-05', opponent: '老张', duration: 60 }]
+  }));
+  eq(s2.getStore().opponents, [], '备份里只有老记录：已删对手不复活');
+
+  // 导出的 JSON 带上 opponents（网页版互通）
+  const json = JSON.parse(s2.exportData());
+  ok(Array.isArray(json.opponents), '导出 JSON 含 opponents 字段');
+}
+
 console.log('\n结果：' + passed + ' 通过，' + failed + ' 失败');
 process.exit(failed ? 1 : 0);

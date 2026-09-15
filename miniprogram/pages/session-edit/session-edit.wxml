@@ -10,7 +10,10 @@
 
   <view class="row">
     <view class="field">
-      <view class="label">和谁打</view>
+      <view class="label-row">
+        <view class="label">和谁打</view>
+        <view class="link-btn" hover-class="btn-hover" bindtap="openOppManager">管理对手</view>
+      </view>
       <input class="input" value="{{opponent}}" bindinput="onOpponent" placeholder="对手 / 球友" placeholder-class="ph" />
     </view>
     <view class="field">
@@ -23,11 +26,17 @@
     <view class="chip" wx:for="{{chips}}" wx:key="*this" data-v="{{item}}" bindtap="pickChip">{{item}}</view>
   </view>
 
-  <view class="field">
-    <view class="label">用了哪把拍子 <text class="opt">（可选）</text></view>
-    <picker range="{{racketNames}}" value="{{racketIndex}}" bindchange="onRacket">
-      <view class="input picker-input">{{racketNames[racketIndex]}}</view>
-    </picker>
+  <view class="row">
+    <view class="field">
+      <view class="label">场地费（元） <text class="opt">（可选）</text></view>
+      <input class="input" type="digit" value="{{cost}}" bindinput="onCost" placeholder="如 40" placeholder-class="ph" />
+    </view>
+    <view class="field">
+      <view class="label">用了哪把拍子 <text class="opt">（可选）</text></view>
+      <picker range="{{racketNames}}" value="{{racketIndex}}" bindchange="onRacket">
+        <view class="input picker-input">{{racketNames[racketIndex]}}</view>
+      </picker>
+    </view>
   </view>
 
   <view class="field">
@@ -38,5 +47,24 @@
   <view class="sheet-actions">
     <view class="ghost" hover-class="btn-hover" bindtap="goBack">取消</view>
     <view class="primary" hover-class="btn-hover" bindtap="save">保存</view>
+  </view>
+</view>
+
+<!-- 管理对手弹层 -->
+<view wx:if="{{oppOpen}}" class="scrim" bindtap="closeOppManager">
+  <view class="sheet" catchtap="noop">
+    <view class="sheet-title">管理对手</view>
+    <view class="sheet-hint">这里删除只是从「和谁打」的候选名单里移除，历史记录不受影响；以后再输入并保存会重新加入名单。</view>
+    <view wx:if="{{!oppRows.length}}" class="hint-line">还没有保存的对手，记一次打球时会自动加入。</view>
+    <view wx:else class="opp-scroll">
+      <view wx:for="{{oppRows}}" wx:key="name" class="opp-row">
+        <view class="opp-name">{{item.name}}</view>
+        <view class="opp-cnt">{{item.cnt}}</view>
+        <view class="mini danger opp-del" hover-class="btn-hover" bindtap="delOpponent" data-name="{{item.name}}">删除</view>
+      </view>
+    </view>
+    <view class="sheet-actions">
+      <view class="primary" hover-class="btn-hover" bindtap="closeOppManager">完成</view>
+    </view>
   </view>
 </view>

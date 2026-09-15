@@ -64,7 +64,8 @@
       </view>
       <view class="pill big">{{item.durationStr}}</view>
     </view>
-    <view class="card-stats" wx:if="{{item.racketName || item.notesShort}}">
+    <view class="card-stats" wx:if="{{item.racketName || item.notesShort || item.costText}}">
+      <view wx:if="{{item.costText}}" class="pill neutral">{{item.costText}}</view>
       <view wx:if="{{item.racketName}}" class="pill">🎾 {{item.racketName}}</view>
       <view wx:if="{{item.notesShort}}" class="pill neutral">📝 {{item.notesShort}}</view>
     </view>

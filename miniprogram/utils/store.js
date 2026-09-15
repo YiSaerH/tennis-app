@@ -5,7 +5,7 @@
 
 const KEY = 'tennis_log_v1';
 
-let store = { rackets: [], sessions: [] };
+let store = { rackets: [], sessions: [], opponents: [] };
 
 /* ---------- 存储 ---------- */
 function load() {
@@ -17,6 +17,17 @@ function load() {
   }
   if (!store.rackets) store.rackets = [];
   if (!store.sessions) store.sessions = [];
+  if (!store.opponents) store.opponents = [];
+  /* 一次性迁移：老数据没有对手库，把历史记录里的对手收进来。
+     只在首次运行时做，之后用户从候选名单里删掉的对手不会复活 */
+  if (!store.opponentsMigrated) {
+    store.sessions.forEach(function (s) {
+      const o = (s.opponent || '').trim();
+      if (o && store.opponents.indexOf(o) < 0) store.opponents.push(o);
+    });
+    store.opponentsMigrated = true;
+    save();
+  }
   return store;
 }
 function save() {
@@ -33,6 +44,9 @@ function uid() {
 function upsertSession(obj) {
   if (!obj.id) obj.id = uid();
   if (!obj.createdAt) obj.createdAt = Date.now();
+  /* 保存时对手自动进候选名单（从名单里删掉的，再保存一次也会回来） */
+  const opp = (obj.opponent || '').trim();
+  if (opp && store.opponents.indexOf(opp) < 0) store.opponents.push(opp);
   const i = store.sessions.findIndex(function (x) { return x.id === obj.id; });
   if (i >= 0) store.sessions[i] = obj; else store.sessions.push(obj);
   save();
@@ -40,6 +54,11 @@ function upsertSession(obj) {
 }
 function deleteSession(id) {
   store.sessions = store.sessions.filter(function (x) { return x.id !== id; });
+  save();
+}
+/* 从「和谁打」候选名单里移除：只影响候选，历史记录不动 */
+function deleteOpponent(name) {
+  store.opponents = store.opponents.filter(function (o) { return o !== name; });
   save();
 }
 function upsertRacket(obj) {
@@ -93,6 +112,10 @@ function fmtDuration(min) {
 function fmtHours(min) {
   if (min < 60) return { n: String(min), unit: '分钟' };
   return { n: (min / 60).toFixed(1).replace(/\.0$/, ''), unit: '小时' };
+}
+/* 金额去掉多余的尾零：40 → ¥40，33.5 → ¥33.5 */
+function fmtMoney(v) {
+  return '¥' + String(+(+v || 0).toFixed(2));
 }
 function todayStr() {
   const d = new Date();
@@ -154,16 +177,15 @@ function shiftMonth(month, delta) {
 }
 
 /* ---------- 统计 ---------- */
-function computeStats() {
+/* month = 'YYYY-MM'（默认本月），统计页按月翻看历史 */
+function computeStats(month) {
   const ss = store.sessions;
   const totalMin = ss.reduce(function (a, s) { return a + (+s.duration || 0); }, 0);
-  const now = new Date();
-  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-  const thisMonth = ss.filter(function (s) {
-    const d = parseDate(s.date);
-    return d && d >= monthStart;
-  });
-  const monthMin = thisMonth.reduce(function (a, s) { return a + (+s.duration || 0); }, 0);
+  const totalCost = ss.reduce(function (a, s) { return a + (+s.cost || 0); }, 0);
+  const m = month || currentMonth();
+  const monthArr = ss.filter(function (s) { return (s.date || '').slice(0, 7) === m; });
+  const monthMin = monthArr.reduce(function (a, s) { return a + (+s.duration || 0); }, 0);
+  const monthCost = monthArr.reduce(function (a, s) { return a + (+s.cost || 0); }, 0);
 
   const opp = {};
   ss.forEach(function (s) {
@@ -183,8 +205,11 @@ function computeStats() {
   return {
     total: ss.length,
     totalMin: totalMin,
-    monthCount: thisMonth.length,
+    totalCost: totalCost,
+    month: m,
+    monthCount: monthArr.length,
     monthMin: monthMin,
+    monthCost: monthCost,
     oppArr: oppArr,
     maxOpp: maxOpp,
     recent: recent
@@ -202,11 +227,23 @@ function importData(json) {
   const existingR = {};
   store.rackets.forEach(function (r) { existingR[r.id] = r; });
   const existingS = {};
-  store.sessions.forEach(function (s) { existingS[s.id] = s; });
+  const oldSessionIds = {};   // 导入前就有的记录：这些记录的对手不再进候选名单（防复活已删的）
+  store.sessions.forEach(function (s) { existingS[s.id] = s; oldSessionIds[s.id] = true; });
   (data.rackets || []).forEach(function (r) { if (r.id) existingR[r.id] = r; });
   (data.sessions || []).forEach(function (s) { if (s.id) existingS[s.id] = s; });
   store.rackets = Object.keys(existingR).map(function (k) { return existingR[k]; });
   store.sessions = Object.keys(existingS).map(function (k) { return existingS[k]; });
+  /* 对手库合并：备份里显式保存的 + 备份新增记录里的 */
+  const seenOpp = {};
+  store.opponents.forEach(function (o) { seenOpp[o] = true; });
+  function addOpp(k) {
+    k = String(k || '').trim();
+    if (k && !seenOpp[k]) { seenOpp[k] = true; store.opponents.push(k); }
+  }
+  (data.opponents || []).forEach(addOpp);
+  (data.sessions || []).forEach(function (s) {
+    if (s.id && !oldSessionIds[s.id]) addOpp(s.opponent);
+  });
   save();
 }
 
@@ -221,10 +258,12 @@ module.exports = {
   upsertRacket: upsertRacket,
   deleteRacket: deleteRacket,
   restringRacket: restringRacket,
+  deleteOpponent: deleteOpponent,
   parseDate: parseDate,
   fmtDate: fmtDate,
   fmtDuration: fmtDuration,
   fmtHours: fmtHours,
+  fmtMoney: fmtMoney,
   todayStr: todayStr,
   currentMonth: currentMonth,
   racketName: racketName,
