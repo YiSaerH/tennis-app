@@ -1,0 +1,44 @@
+{
+  "pages": [
+    "pages/records/records",
+    "pages/gear/gear",
+    "pages/stats/stats",
+    "pages/session-edit/session-edit",
+    "pages/gear-edit/gear-edit"
+  ],
+  "window": {
+    "navigationBarBackgroundColor": "#f7f7f4",
+    "navigationBarTitleText": "网球记",
+    "navigationBarTextStyle": "black",
+    "backgroundColor": "#f7f7f4"
+  },
+  "tabBar": {
+    "color": "#8a8f8a",
+    "selectedColor": "#2e7d32",
+    "backgroundColor": "#ffffff",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/records/records",
+        "text": "打球记录",
+        "iconPath": "images/tab-records.png",
+        "selectedIconPath": "images/tab-records-active.png"
+      },
+      {
+        "pagePath": "pages/gear/gear",
+        "text": "我的拍子",
+        "iconPath": "images/tab-gear.png",
+        "selectedIconPath": "images/tab-gear-active.png"
+      },
+      {
+        "pagePath": "pages/stats/stats",
+        "text": "统计",
+        "iconPath": "images/tab-stats.png",
+        "selectedIconPath": "images/tab-stats-active.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "lazyCodeLoading": "requiredComponents",
+  "sitemapLocation": "sitemap.json"
+}

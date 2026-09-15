@@ -1,0 +1,2 @@
+/* 球拍编辑页：字段样式在 app.wxss，这里只放本页微调 */
+.form-wrap { padding-bottom: 80rpx; }

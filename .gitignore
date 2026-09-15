@@ -7,3 +7,8 @@ desktop.ini
 _check.js
 *.log
 *.tmp
+gh_*.json
+gh_*.md
+
+# 云函数本地依赖（部署时由云端安装）
+node_modules/

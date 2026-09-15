@@ -1,0 +1,42 @@
+<view class="wrap">
+
+  <view class="page-head">
+    <view>
+      <view class="h2">我的拍子</view>
+      <view class="sub">{{countText}}</view>
+    </view>
+    <view class="primary" hover-class="btn-hover" bindtap="addGear">＋ 添加球拍</view>
+  </view>
+
+  <view wx:if="{{!list.length}}" class="empty">
+    <view class="big">🏸</view>
+    <view class="e-p">还没有球拍</view>
+    <view class="e-p">记下你的拍子参数吧</view>
+    <view class="primary" hover-class="btn-hover" bindtap="addGear">添加球拍</view>
+  </view>
+
+  <view wx:for="{{list}}" wx:key="id" class="card">
+    <view class="card-top">
+      <view>
+        <view class="card-title">{{item.name}}</view>
+        <view wx:if="{{item.string}}" class="card-meta">线：{{item.string}}</view>
+      </view>
+      <view wx:if="{{item.uses}}" class="pill neutral">打过 {{item.uses}} 次</view>
+    </view>
+    <view class="card-stats" wx:if="{{item.weight || item.tension || item.swing}}">
+      <view wx:if="{{item.weight}}" class="pill">⚖️ {{item.weight}}g</view>
+      <view wx:if="{{item.tension}}" class="pill">磅 {{item.tension}}{{item.tensionPair ? '（横/竖）' : ''}}</view>
+      <view wx:if="{{item.swing}}" class="pill">挥重 {{item.swing}}</view>
+    </view>
+    <view wx:if="{{item.infoText}}" class="card-meta info-line">
+      {{item.infoText}}<text wx:if="{{item.infoDue}}" class="due"> · 建议换线</text>
+    </view>
+    <view wx:if="{{item.notes}}" class="card-meta notes-line">{{item.notes}}</view>
+    <view class="card-actions">
+      <view class="mini" hover-class="btn-hover" bindtap="restring" data-id="{{item.id}}">记录换线</view>
+      <view class="mini" hover-class="btn-hover" bindtap="editGear" data-id="{{item.id}}">编辑</view>
+      <view class="mini danger" hover-class="btn-hover" bindtap="delGear" data-id="{{item.id}}">删除</view>
+    </view>
+  </view>
+
+</view>

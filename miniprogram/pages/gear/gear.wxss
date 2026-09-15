@@ -1,0 +1,7 @@
+.info-line { margin-top: 20rpx; }
+.due { color: #b00020; font-weight: 700; }
+.notes-line { margin-top: 14rpx; white-space: pre-wrap; }
+
+/* 添加球拍按钮（页头 + 空状态）比默认 .primary 小一号 */
+.page-head .primary { padding: 12rpx 24rpx; font-size: 26rpx; border-radius: 16rpx; }
+.empty .primary { padding: 14rpx 32rpx; font-size: 28rpx; border-radius: 18rpx; }

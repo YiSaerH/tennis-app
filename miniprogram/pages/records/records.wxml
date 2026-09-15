@@ -1,0 +1,79 @@
+<view class="wrap">
+
+  <!-- 穿线提醒 -->
+  <view wx:if="{{banners.length}}" class="banner">
+    <view class="b-icon">🏸</view>
+    <view class="b-body">
+      <view class="b-title">该换线了</view>
+      <view wx:for="{{banners}}" wx:key="id" class="b-line">「{{item.name}}」已穿 {{item.days}} 天 / 打了 {{item.hours}} 小时</view>
+      <view class="mini" hover-class="btn-hover" bindtap="goGear">去记录换线</view>
+    </view>
+  </view>
+
+  <view class="page-head">
+    <view>
+      <view class="h2">打球记录</view>
+      <view class="sub">{{countText}}</view>
+    </view>
+  </view>
+
+  <input class="search" placeholder="搜索对手或备注…" value="{{search}}" bindinput="onSearch" confirm-type="search" />
+
+  <view class="filter-bar">
+    <picker class="f-picker" mode="selector" range="{{oppRange}}" bindchange="onOppChange">
+      <view class="f-item">{{oppLabel}}</view>
+    </picker>
+    <picker class="f-picker" mode="date" fields="month" bindchange="onMonthChange">
+      <view class="f-item">{{monthLabel}}</view>
+    </picker>
+    <view class="mini f-reset" hover-class="btn-hover" bindtap="onReset">重置</view>
+  </view>
+
+  <!-- 月历 -->
+  <view wx:if="{{cal}}" class="calendar">
+    <view class="cal-head">
+      <view class="cal-nav" hover-class="btn-hover" bindtap="calPrev">‹</view>
+      <view class="cal-title" style="width: 452rpx; display: block; box-sizing: border-box">{{cal.y}}年{{cal.mo}}月</view>
+      <view class="cal-nav" hover-class="btn-hover" bindtap="calNext">›</view>
+    </view>
+    <view class="cal-wds">
+      <view class="cal-wd" wx:for="{{wds}}" wx:key="*this">{{item}}</view>
+    </view>
+    <view class="cal-grid">
+      <view class="cal-cell" wx:for="{{cal.cells}}" wx:key="k">
+        <view wx:if="{{!item.blank}}"
+          class="cal-day {{item.has ? 'has' : ''}} {{item.today ? 'today' : ''}} {{item.sel ? 'sel' : ''}}"
+          bindtap="pickDay" data-ds="{{item.ds}}">{{item.d}}</view>
+      </view>
+    </view>
+  </view>
+
+  <!-- 列表 -->
+  <view wx:if="{{!list.length}}" class="empty">
+    <view class="big">🎾</view>
+    <view class="e-p">{{search ? '没有匹配的记录' : '还没有打球记录'}}</view>
+    <view wx:if="{{!search}}" class="e-p">点右下角 + 记第一次吧</view>
+    <view wx:if="{{!search}}" class="primary" hover-class="btn-hover" bindtap="addSession">记一次打球</view>
+  </view>
+
+  <view wx:for="{{list}}" wx:key="id" class="card">
+    <view class="card-top">
+      <view>
+        <view class="card-title">{{item.opponent}}</view>
+        <view class="card-meta">{{item.dateStr}}</view>
+      </view>
+      <view class="pill big">{{item.durationStr}}</view>
+    </view>
+    <view class="card-stats" wx:if="{{item.racketName || item.notesShort}}">
+      <view wx:if="{{item.racketName}}" class="pill">🎾 {{item.racketName}}</view>
+      <view wx:if="{{item.notesShort}}" class="pill neutral">📝 {{item.notesShort}}</view>
+    </view>
+    <view class="card-actions">
+      <view class="mini" hover-class="btn-hover" bindtap="editSession" data-id="{{item.id}}">编辑</view>
+      <view class="mini danger" hover-class="btn-hover" bindtap="delSession" data-id="{{item.id}}">删除</view>
+    </view>
+  </view>
+
+</view>
+
+<view class="fab" hover-class="btn-hover" bindtap="addSession">＋</view>

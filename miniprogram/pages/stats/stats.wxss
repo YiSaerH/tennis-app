@@ -1,0 +1,54 @@
+/* 统计卡片：2 列（与网页版手机布局一致） */
+.stat-grid { display: flex; flex-wrap: wrap; gap: 24rpx; margin-bottom: 8rpx; }
+.stat {
+  width: calc(50% - 12rpx);
+  box-sizing: border-box;
+  background: #fff;
+  border: 1rpx solid #e6e4dc;
+  border-radius: 28rpx;
+  padding: 32rpx;
+  box-shadow: 0 2rpx 6rpx rgba(0, 0, 0, 0.06), 0 8rpx 32rpx rgba(0, 0, 0, 0.04);
+}
+.stat .n { font-size: 56rpx; font-weight: 800; letter-spacing: -1rpx; line-height: 1.2; }
+.stat .unit { font-size: 28rpx; font-weight: 600; color: #6b7269; margin-left: 6rpx; }
+.stat .l { color: #6b7269; font-size: 26rpx; margin-top: 4rpx; }
+.stat.accent { background: linear-gradient(135deg, #2e7d32, #1b5e20); color: #fff; border-color: transparent; }
+.stat.accent .l { color: rgba(255, 255, 255, 0.8); }
+.stat.accent .unit { color: rgba(255, 255, 255, 0.75); }
+
+/* 排行条 */
+.h3 { margin: 40rpx 0 20rpx; font-size: 32rpx; font-weight: 700; }
+/* 标题行：标题 + 右侧「展开/收起」胶囊按钮 */
+.h3-row { display: flex; align-items: center; justify-content: space-between; gap: 16rpx; margin: 40rpx 0 20rpx; }
+.h3-row .h3 { margin: 0; }
+.fold-btn {
+  flex-shrink: 0;
+  font-size: 24rpx;
+  font-weight: 600;
+  color: #2e7d32;
+  background: #fff;
+  border: 1rpx solid #e6e4dc;
+  border-radius: 999rpx;
+  padding: 8rpx 24rpx;
+}
+.bar-row { display: flex; align-items: center; gap: 20rpx; margin-bottom: 20rpx; }
+.bar-row .name {
+  width: 180rpx;
+  font-size: 28rpx;
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.bar-track { flex: 1; height: 48rpx; background: #f0efe9; border-radius: 12rpx; overflow: hidden; }
+.bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #2e7d32, #66bb6a);
+  border-radius: 12rpx;
+  min-width: 6rpx;
+}
+.bar-fill.ball { background: linear-gradient(90deg, #c6ff3d, #9ccc65); }
+.bar-row .cnt { font-size: 26rpx; color: #6b7269; width: 56rpx; text-align: right; white-space: nowrap; }
+.bar-row .cnt.wide { width: auto; min-width: 120rpx; }
+
+.backup-card { margin-top: 48rpx; }

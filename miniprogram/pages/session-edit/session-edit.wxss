@@ -1,0 +1,11 @@
+/* 记录编辑页：字段样式在 app.wxss，这里放对手快速点选的 chips */
+.form-wrap { padding-bottom: 80rpx; }
+.chips { display: flex; flex-wrap: wrap; gap: 14rpx; margin: -6rpx 0 28rpx; }
+.chip {
+  background: #fff;
+  border: 1rpx solid #e6e4dc;
+  color: #5d6560;
+  padding: 10rpx 24rpx;
+  border-radius: 999rpx;
+  font-size: 25rpx;
+}

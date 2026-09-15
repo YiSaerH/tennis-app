@@ -1,0 +1,62 @@
+<view class="wrap">
+  <view class="page-head">
+    <view>
+      <view class="h2">统计</view>
+      <view class="sub">你的网球生活一览</view>
+    </view>
+  </view>
+
+  <view class="stat-grid">
+    <view class="stat accent">
+      <view class="n">{{totalN}}<text class="unit">次</text></view>
+      <view class="l">总打球次数</view>
+    </view>
+    <view class="stat" style="width: 339rpx; height: 172rpx; display: block; box-sizing: border-box">
+      <view class="n">{{totalTime.n}}<text class="unit">{{totalTime.unit}}</text></view>
+      <view class="l">累计时长</view>
+    </view>
+    <view class="stat">
+      <view class="n">{{monthCount}}<text class="unit">次</text></view>
+      <view class="l">本月打球</view>
+    </view>
+    <view class="stat" style="width: 339rpx; height: 172rpx; display: block; box-sizing: border-box">
+      <view class="n">{{monthTime.n}}<text class="unit">{{monthTime.unit}}</text></view>
+      <view class="l">本月时长</view>
+    </view>
+  </view>
+
+  <view class="recent">
+    <view class="h3-row">
+      <view class="h3">常一起打球的人</view>
+      <view wx:if="{{opps.length > 3}}" class="fold-btn" hover-class="btn-hover" bindtap="toggleOpps">{{oppsOpen ? '收起' : '展开'}}</view>
+    </view>
+    <view wx:if="{{!opps.length}}" class="hint-line">还没有一起打球的记录。</view>
+    <view wx:for="{{oppsShown}}" wx:key="name" class="bar-row">
+      <view class="name">{{item.name}}</view>
+      <view class="bar-track"><view class="bar-fill" style="width: {{item.pct}}%;"></view></view>
+      <view class="cnt">{{item.c}}</view>
+    </view>
+  </view>
+
+  <view class="recent">
+    <view class="h3-row">
+      <view class="h3">最近 10 次打球</view>
+      <view wx:if="{{recent.length > 3}}" class="fold-btn" hover-class="btn-hover" bindtap="toggleRecent">{{recentOpen ? '收起' : '展开'}}</view>
+    </view>
+    <view wx:if="{{!recent.length}}" class="hint-line">暂无记录。</view>
+    <view wx:for="{{recentShown}}" wx:key="id" class="bar-row">
+      <view class="name">{{item.name}}</view>
+      <view class="bar-track"><view class="bar-fill ball" style="width: {{item.pct}}%;"></view></view>
+      <view class="cnt wide">{{item.dur}}</view>
+    </view>
+  </view>
+
+  <view class="card backup-card">
+    <view class="card-title">数据备份</view>
+    <view class="card-meta">数据保存在本机。换手机，或在网页版和小程序之间搬家时，用下面两个按钮（备份 JSON 两边通用）。</view>
+    <view class="card-actions">
+      <view class="mini" hover-class="btn-hover" bindtap="exportBackup">⬇️ 导出备份</view>
+      <view class="mini" hover-class="btn-hover" bindtap="importBackup">⬆️ 导入备份</view>
+    </view>
+  </view>
+</view>

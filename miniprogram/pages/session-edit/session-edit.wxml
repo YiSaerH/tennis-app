@@ -1,0 +1,42 @@
+<view class="wrap form-wrap">
+  <view class="hint">记录今天的对手和时长，留个网球回忆。</view>
+
+  <view class="field">
+    <view class="label">日期</view>
+    <picker mode="date" value="{{date}}" bindchange="onDate">
+      <view class="input picker-input {{date ? '' : 'ph'}}">{{date || '选择日期'}}</view>
+    </picker>
+  </view>
+
+  <view class="row">
+    <view class="field">
+      <view class="label">和谁打</view>
+      <input class="input" value="{{opponent}}" bindinput="onOpponent" placeholder="对手 / 球友" placeholder-class="ph" />
+    </view>
+    <view class="field">
+      <view class="label">玩了多久（分钟）</view>
+      <input class="input" type="number" value="{{duration}}" bindinput="onDuration" placeholder="如 90" placeholder-class="ph" />
+    </view>
+  </view>
+
+  <view class="chips" wx:if="{{chips.length}}">
+    <view class="chip" wx:for="{{chips}}" wx:key="*this" data-v="{{item}}" bindtap="pickChip">{{item}}</view>
+  </view>
+
+  <view class="field">
+    <view class="label">用了哪把拍子 <text class="opt">（可选）</text></view>
+    <picker range="{{racketNames}}" value="{{racketIndex}}" bindchange="onRacket">
+      <view class="input picker-input">{{racketNames[racketIndex]}}</view>
+    </picker>
+  </view>
+
+  <view class="field">
+    <view class="label">备注 <text class="opt">（可选）</text></view>
+    <textarea class="input textarea" value="{{notes}}" bindinput="onNotes" placeholder="比分、场地、手感…" placeholder-class="ph" maxlength="500" />
+  </view>
+
+  <view class="sheet-actions">
+    <view class="ghost" hover-class="btn-hover" bindtap="goBack">取消</view>
+    <view class="primary" hover-class="btn-hover" bindtap="save">保存</view>
+  </view>
+</view>

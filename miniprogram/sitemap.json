@@ -1,0 +1,9 @@
+{
+  "desc": "网球记：本工具无需搜索收录",
+  "rules": [
+    {
+      "action": "disallow",
+      "page": "*"
+    }
+  ]
+}

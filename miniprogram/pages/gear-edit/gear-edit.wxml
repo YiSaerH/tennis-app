@@ -1,0 +1,48 @@
+<view class="wrap form-wrap">
+  <view class="hint">记下拍子的参数，方便以后换线、对比手感。</view>
+
+  <view class="field">
+    <view class="label">球拍名称</view>
+    <input class="input" value="{{name}}" bindinput="onName" placeholder="如：Babolat Pure Aero" placeholder-class="ph" />
+  </view>
+
+  <view class="row">
+    <view class="field">
+      <view class="label">重量 (g)</view>
+      <input class="input" type="number" value="{{weight}}" bindinput="onWeight" placeholder="300" placeholder-class="ph" />
+    </view>
+    <view class="field">
+      <view class="label">线磅数（横/竖）</view>
+      <input class="input" value="{{tension}}" bindinput="onTension" placeholder="如 46/48 或 55" placeholder-class="ph" />
+    </view>
+  </view>
+
+  <view class="field">
+    <view class="label">挥重 <text class="opt">(kg·cm²)</text></view>
+    <input class="input" type="number" value="{{swing}}" bindinput="onSwing" placeholder="320" placeholder-class="ph" />
+  </view>
+
+  <view class="row">
+    <view class="field">
+      <view class="label">线型 <text class="opt">（可选）</text></view>
+      <input class="input" value="{{string}}" bindinput="onString" placeholder="如：RPM Blast 1.25" placeholder-class="ph" />
+    </view>
+    <view class="field">
+      <view class="label">穿线日期 <text class="opt">（可选）</text></view>
+      <picker mode="date" value="{{strung}}" bindchange="onStrung">
+        <view class="input picker-input {{strung ? '' : 'ph'}}">{{strung || '选择日期'}}</view>
+      </picker>
+      <view wx:if="{{strung}}" class="link-btn" hover-class="btn-hover" bindtap="clearStrung">清除日期</view>
+    </view>
+  </view>
+
+  <view class="field">
+    <view class="label">备注 <text class="opt">（可选）</text></view>
+    <textarea class="input textarea" value="{{notes}}" bindinput="onNotes" placeholder="平衡点、手胶…" placeholder-class="ph" maxlength="500" />
+  </view>
+
+  <view class="sheet-actions">
+    <view class="ghost" hover-class="btn-hover" bindtap="goBack">取消</view>
+    <view class="primary" hover-class="btn-hover" bindtap="save">保存</view>
+  </view>
+</view>
