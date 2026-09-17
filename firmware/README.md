@@ -7,7 +7,7 @@
 | 物品 | 参考价 | 说明 |
 | --- | --- | --- |
 | Seeed XIAO nRF52840（**预焊排针版**） | ¥50-60 | 淘宝搜「XIAO nRF52840」，选预焊排针；Sense 版用不上摄像头，普通版即可 |
-| WS2812 灯板（单颗或 4 颗环形） | ¥3-5 | 搜「WS2812 5050 模块」；4 颗就把固件 `NUM_PIXELS` 保持 4，单颗改成 1 |
+| WS2812 灯板（单颗或 4 颗环形） | ¥3-5 | 搜「WS2812 5050 模块」，要**带针脚的模块**；裸灯珠（5050 贴片，只有 4 个小焊盘、无针脚）插不了面包板，别买错。4 颗就把固件 `NUM_PIXELS` 保持 4，单颗改成 1 |
 | 面包板（830 孔标准款） | ¥5-10 | XIAO 预焊排针正好直插；400 孔半尺寸也够用 |
 | 杜邦线套装（公对公/公对母/母对母 各 40 根，10-20cm） | ¥10-15 | 2.54mm 间距标准款，搜「杜邦线 120根 套装」 |
 | 轻触开关 6×6mm（2-3 颗） | ¥1-2 | 面包板直插；多数「面包板套装」已包含 |
@@ -31,11 +31,21 @@ USB-C ── 直接插 XIAO（充电 + 烧写二合一）
 
 电池电压走板载分压 + `VBAT_ENABLE(P0.14)` 开关，固件已在 `setup()` 里把它拉低，**不要**把电池直接接到任何 IO。
 
+## 新手拼装要点（面包板）
+
+- 面包板中间凹槽把每列分成两半：每半列的 5 个孔（a–e 一组、f–j 一组）内部连通，凹槽两侧**不**连通。XIAO 跨凹槽插，一排脚占 c 行、一排占 g 行；板边丝印横着读是 `+jihgf edcba-` 也没关系，孔位对称，电气上等价。USB 口朝列号小的那头。
+- XIAO 丝印字很小，看不清就手机拍照放大。两排脚从 USB 那头数起，一排是 `5V, GND, 3V3, 6, 7, 8, 9`，另一排是 `0, 1, 2, 3, 4, 5, 10`。
+- 本项目只用 4 个脚：`2`→灯 DIN、`3`→按键、`3V3`→灯供电、`GND`→公共地。XIAO 每个脚只占一个孔，同一列同一半还剩 4 个空孔，杜邦线插空孔即可，**不用拔 XIAO**。
+- 轻触开关 6×6mm 跨凹槽插：同侧两条腿内部常通，按下才把两侧连通。一侧所在列的空孔用公对公线连到 `3` 那列的空孔，另一侧连到 `GND` 那列的空孔。
+- WS2812 模块一般 4 脚（DIN / DOUT / VCC / GND），只接 3 根线：D2→DIN、3V3→VCC、GND→GND，DOUT 悬空不接。
+- 杜邦线选择：面包板孔↔面包板孔用**公对公**；面包板孔↔模块针脚用**公对母**（模块针脚直接插面包板孔也行，就不用线）。
+
 ## 烧写步骤（Arduino IDE）
 
 1. 装板级包：文件 → 首选项 → 附加开发板管理器网址，添加
-   `https://raw.githubusercontent.com/seeed-studio/Adafruit_nRF52_Arduino/master/package_seeed_nrf52_index.json`
-   （国内打不开就挂代理，端口 7897 那个）。
+   `https://files.seeedstudio.com/arduino/package_seeeduino_boards_index.json`
+   （Seeed 官方 CDN，国内可直连。旧地址 `raw.githubusercontent.com/seeed-studio/Adafruit_nRF52_Arduino/.../package_seeed_nrf52_index.json` 已被 Seeed 删除，打开是 404，别再用）。
+   板级包本体和 CMSIS 走 Seeed CDN，但编译工具链 **gcc / nrfjprog 从 GitHub 下载**——安装时把系统代理开着（端口 7897 那个），否则这两个工具大概率下不动。
 2. 开发板管理器搜 `Seeed nRF52` → 安装 **Seeed nRF52 Boards**。
 3. 库管理器装 **Adafruit NeoPixel**（bluefruit 已随板级包自带）。
 4. 开发板选 **Seeed XIAO nRF52840**，端口选对应的 COM 口。
