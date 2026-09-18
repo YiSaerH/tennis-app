@@ -1,8 +1,16 @@
 /* wx 蓝牙（BLE）封装：统一处理适配器 / 扫描 / 连接 / 写入 / 通知，
    页面代码只管业务。与饰品的字节协议见 utils/ble-protocol.js。
-   注意：微信开发者工具的模拟器不支持蓝牙，扫描和连接要用「真机调试」。 */
+   注意：微信开发者工具的模拟器没有蓝牙 —— 工具里由 ble-mock.js 模拟一台
+   饰品跑通全流程（调 UI 用）；真机和真实饰品不受影响，走下面的真接口。 */
 
 var proto = require('./ble-protocol');
+
+/* 仅开发者工具：替换 wx 蓝牙接口为模拟饰品（platform==='devtools' 只在工具里成立） */
+try {
+  if (typeof wx !== 'undefined' && wx.getSystemInfoSync().platform === 'devtools') {
+    require('./ble-mock').install();
+  }
+} catch (e) { }
 
 var state = {
   adapterReady: false,
