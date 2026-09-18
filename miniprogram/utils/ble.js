@@ -27,8 +27,8 @@ var disconnectCb = null;  // 断连回调（防丢提醒用）
 function ensureAdapter(cb) {
   if (state.adapterReady) { cb(null); return; }
   wx.openBluetoothAdapter({
-    success() { state.adapterReady = true; cb(null); },
-    fail(res) { cb(res); }
+    success() { state.adapterReady = true; console.log('[ble] 蓝牙适配器就绪'); cb(null); },
+    fail(res) { console.log('[ble] 适配器打开失败: ' + res.errMsg); cb(res); }
   });
 }
 
@@ -52,6 +52,7 @@ function scanCharm(durationSec, cb) {
         if (seen[d.deviceId]) return;
         seen[d.deviceId] = true;
         devices.push(d);
+        console.log('[ble] 扫到设备: ' + (d.name || d.localName || '未命名') + ' (' + d.deviceId + ')');
       });
     });
     wx.startBluetoothDevicesDiscovery({
@@ -62,6 +63,7 @@ function scanCharm(durationSec, cb) {
           if (finished) return;
           finished = true;
           wx.stopBluetoothDevicesDiscovery();
+          console.log('[ble] 扫描结束，共 ' + devices.length + ' 台');
           cb(null, devices);
         }, (durationSec || 6) * 1000);
       },
@@ -117,7 +119,7 @@ function connect(deviceId, cb) {
   wx.createBLEConnection({
     deviceId: deviceId,
     success() { discoverChars(deviceId, cb); },
-    fail(res) { cb(res); }
+    fail(res) { console.log('[ble] 连接失败: ' + res.errMsg); cb(res); }
   });
 }
 
@@ -130,7 +132,7 @@ function discoverChars(deviceId, cb) {
       res.services.forEach(function (s) {
         if (String(s.uuid).toLowerCase() === proto.SERVICE_UUID) svc = s;
       });
-      if (!svc) { cb({ errMsg: '找不到饰品服务（固件版本不匹配）' }); return; }
+      if (!svc) { console.log('[ble] 服务列表里没有饰品服务'); cb({ errMsg: '找不到饰品服务（固件版本不匹配）' }); return; }
       wx.getBLEDeviceCharacteristics({
         deviceId: deviceId,
         serviceId: svc.uuid,
@@ -141,13 +143,14 @@ function discoverChars(deviceId, cb) {
             if (u === proto.CMD_CHAR_UUID && c.properties.write) cmd = c;
             if (u === proto.STATUS_CHAR_UUID && c.properties.notify) st = c;
           });
-          if (!cmd) { cb({ errMsg: '饰品固件缺少命令通道' }); return; }
+          if (!cmd) { console.log('[ble] 特征值里没有命令通道'); cb({ errMsg: '饰品固件缺少命令通道' }); return; }
           state.deviceId = deviceId;
           state.serviceId = svc.uuid;
           state.cmdCharId = cmd.uuid;
           state.statusCharId = st ? st.uuid : '';
           state.connected = true;
           subscribeNotify();
+          console.log('[ble] 已连接 ' + deviceId + '，命令/状态通道就绪');
           cb(null);
         },
         fail(res) { cb(res); }
@@ -161,6 +164,7 @@ function subscribeNotify() {
   if (wx.offBLEConnectionStateChange) wx.offBLEConnectionStateChange();
   wx.onBLEConnectionStateChange(function (res) {
     if (!res.connected && res.deviceId === state.deviceId) {
+      console.log('[ble] 断开事件: ' + res.deviceId);
       state.connected = false;
       if (disconnectCb) disconnectCb();
     }
@@ -176,7 +180,9 @@ function subscribeNotify() {
   wx.onBLECharacteristicValueChange(function (res) {
     if (res.deviceId !== state.deviceId) return;
     var parsed = proto.parseStatus(proto.fromBuffer(res.value));
-    if (parsed && statusCb) statusCb(parsed);
+    if (!parsed) { console.log('[ble] 收到无法解析的状态帧'); return; }
+    console.log('[ble] 状态: 电量' + parsed.battery + '% 模式' + parsed.mode + ' ' + parsed.color + ' 亮度' + parsed.brightness);
+    if (statusCb) statusCb(parsed);
   });
 }
 
@@ -192,7 +198,7 @@ function write(bytes, cb) {
     characteristicId: state.cmdCharId,
     value: proto.toBuffer(bytes),
     success() { if (cb) cb(null); },
-    fail(res) { if (cb) cb(res); }
+    fail(res) { console.log('[ble] 写入失败: ' + res.errMsg); if (cb) cb(res); }
   });
 }
 
