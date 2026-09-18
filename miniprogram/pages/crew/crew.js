@@ -40,18 +40,13 @@ Page({
     this.stopHeartbeat();
   },
 
-  /* ---------- 定位 ---------- */
+  /* ---------- 定位（临时停用）----------
+     模糊定位的接口权限还没在微信后台申请开通，代码包里带着这个调用
+     就上传不了开发版（真机调试报 -80424）。开通后把 getLoc 恢复成真调用，
+     并在 app.json 加回 requiredPrivateInfos / permission 声明（git 历史里有）。 */
 
   getLoc: function (cb) {
-    wx.getFuzzyLocation({
-      type: 'gcj02',
-      success: function (res) {
-        cb(null, { latitude: res.latitude, longitude: res.longitude });
-      },
-      fail: function (err) {
-        cb(err);
-      }
-    });
+    cb({ errMsg: '定位接口暂未开通' });
   },
 
   /* ---------- 共享开关与心跳 ---------- */

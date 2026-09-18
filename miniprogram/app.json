@@ -8,14 +8,6 @@
     "pages/crew/crew",
     "pages/charm/charm"
   ],
-  "requiredPrivateInfos": [
-    "getFuzzyLocation"
-  ],
-  "permission": {
-    "scope.getFuzzyLocation": {
-      "desc": "用于在球友地图上显示你和附近球友的密度（只上传约 1 公里的网格点，绝不上传精确位置）"
-    }
-  },
   "window": {
     "navigationBarBackgroundColor": "#f7f7f4",
     "navigationBarTitleText": "网球记",
