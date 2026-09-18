@@ -20,7 +20,7 @@
 /* ---------- 引脚 ---------- */
 #define LED_PIN     2     // D2 → WS2812 DIN
 #define BUTTON_PIN  3     // D3 → 按键（另一端接 GND，内部上拉）
-#define NUM_PIXELS  4     // 买的灯是几颗就改成几
+#define NUM_PIXELS  1     // 买的灯是几颗就改成几（你手上是单颗）
 
 #ifndef PIN_VBAT
 #define PIN_VBAT    32    // P0.31，板级包一般已定义
@@ -52,10 +52,10 @@ enum {
   MODE_RADAR      // 雷达（一次性 3 闪，结束回到之前的模式）
 };
 
-/* ---------- BLE 对象 ---------- */
+/* ---------- BLE 对象（属性宏用板级包的 CHR_PROPS_* 命名） ---------- */
 BLEService        charmSvc(UUID_SVC);
-BLECharacteristic cmdChr(UUID_CMD, BLE_WRITE | BLE_WRITE_WO_RESP, 20);
-BLECharacteristic statusChr(UUID_STATUS, BLE_NOTIFY, 8, true);  // 定长 8
+BLECharacteristic cmdChr(UUID_CMD, CHR_PROPS_WRITE | CHR_PROPS_WRITE_WO_RESP, 20);
+BLECharacteristic statusChr(UUID_STATUS, CHR_PROPS_NOTIFY, 8, true);  // 定长 8
 BLEDis            dis;
 BLEBas            bas;   // 标准电量服务，手表/系统也能读
 
@@ -109,7 +109,7 @@ void setup() {
   dis.setModel("Charm v0.1");
 
   bas.begin();
-  bas.update(batteryPct);
+  bas.write(batteryPct);
 
   /* 广播里带服务 UUID：小程序按它过滤扫描；已连接的饰品不广播，
      所以手机扫到的都是别人的饰品（雷达互闪 v0.1 的前提） */
@@ -122,13 +122,13 @@ void setup() {
   Bluefruit.Advertising.setInterval(160, 244);   // 单位 0.625ms
   Bluefruit.Advertising.start(0);                // 0 = 一直广播
 
-  Bluefruit.setConnectCallback(connectCb);
-  Bluefruit.setDisconnectCallback(disconnectCb);
+  /* 这个板级包没有 setConnectCallback，连接状态在 loop 里轮询（见 pollConnection） */
 
   modeStart = millis();
 }
 
 void loop() {
+  pollConnection();
   pollButton();
   pollBattery();
 
@@ -142,17 +142,21 @@ void loop() {
   delay(5);
 }
 
-/* ---------- BLE 回调 ---------- */
+/* ---------- 连接状态：板级包没有连接/断开回调，loop 里轮询 ---------- */
 
-void connectCb(uint16_t conn_hdl) {
-  (void)conn_hdl;
-  bleConnected = true;
-  sendStatus();
-}
+uint32_t lastStatusMs = 0;
 
-void disconnectCb(uint16_t conn_hdl, uint8_t reason) {
-  (void)conn_hdl; (void)reason;
-  bleConnected = false;
+void pollConnection() {
+  bool nowConn = (Bluefruit.connected() > 0);
+  if (nowConn != bleConnected) {
+    bleConnected = nowConn;
+    if (bleConnected) sendStatus();
+  }
+  /* 连着的时候每 5 秒推一帧状态：手机一订阅上就能拿到，不用非得发条命令 */
+  if (bleConnected && millis() - lastStatusMs > 5000) {
+    lastStatusMs = millis();
+    sendStatus();
+  }
 }
 
 /* Seeed nRF52 板级包的写回调是 4 参数版本 */
@@ -223,7 +227,7 @@ void sendStatus() {
   if (bleConnected) {
     statusChr.notify(b, 8);
   }
-  bas.update(batteryPct);
+  bas.write(batteryPct);
 }
 
 /* ---------- 电池：官方 adc_vbat 示例的读法（分压补偿 ×2.0） ---------- */
@@ -244,7 +248,7 @@ void pollBattery() {
   batteryPct = (uint8_t)constrain(pct, 0, 100);
 
   if (bleConnected) {
-    bas.update(batteryPct);
+    bas.write(batteryPct);
     sendStatus();
   }
 }
