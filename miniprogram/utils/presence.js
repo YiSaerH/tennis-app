@@ -20,17 +20,25 @@ function initCloud() {
     cloudReady = true;
   } catch (e) {
     cloudReady = false;
+    console.log('[cloud] 初始化失败: ' + (e && e.message));
   }
+  if (cloudReady) console.log('[cloud] 云开发已初始化');
   return cloudReady;
 }
 
 function callFn(name, data, cb) {
-  if (!cloudReady) { cb(new Error('云开发未初始化')); return; }
+  if (!cloudReady) { console.log('[cloud] 未初始化，跳过 ' + name); cb(new Error('云开发未初始化')); return; }
   wx.cloud.callFunction({
     name: name,
     data: data,
-    success(res) { cb(null, res.result); },
-    fail(res) { cb(res); }
+    success(res) {
+      console.log('[cloud] ' + name + ' 调用成功');
+      cb(null, res.result);
+    },
+    fail(res) {
+      console.log('[cloud] ' + name + ' 调用失败: ' + (res && res.errMsg));
+      cb(res);
+    }
   });
 }
 
@@ -57,6 +65,7 @@ function offline(cb) {
 function density(lat, lng, cb) {
   callFn('density', { lat: lat, lng: lng }, function (err, result) {
     if (err || !result || !result.cells) {
+      console.log('[cloud] density 降级演示数据，原因: ' + (err ? (err.errMsg || err.message) : '返回里没有 cells'));
       cb(null, { demo: true, cells: geogrid.demoCells(lat, lng) });
       return;
     }
