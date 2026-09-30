@@ -157,6 +157,11 @@ Page({
     var that = this;
     var c = this.data.center;
     presence.density(c.latitude, c.longitude, function (res) {
+      if (!res || !res.cells) {
+        /* 双保险：presence.js 正常不会传空回来，这里再挡一层，页面回调任何情况下不崩 */
+        console.log('[crew] density 回调拿到空结果，用演示数据兜底');
+        res = { demo: true, cells: geogrid.demoCells(c.latitude, c.longitude) };
+      }
       that.setData({
         circles: geogrid.buildCircles(res.cells),
         demo: res.demo

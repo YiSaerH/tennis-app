@@ -64,8 +64,11 @@ function offline(cb) {
 /* 附近密度。拿不到云数据 → 演示网格（demo 标记给页面显示提示条） */
 function density(lat, lng, cb) {
   callFn('density', { lat: lat, lng: lng }, function (err, result) {
-    if (err || !result || !result.cells) {
-      console.log('[cloud] density 降级演示数据，原因: ' + (err ? (err.errMsg || err.message) : '返回里没有 cells'));
+    if (result && result.error) {
+      console.log('[cloud] density 云端执行报错: ' + result.error);
+    }
+    if (err || !result || result.error || !result.cells) {
+      console.log('[cloud] density 降级演示数据，原始返回: ' + JSON.stringify(result || err));
       cb(null, { demo: true, cells: geogrid.demoCells(lat, lng) });
       return;
     }

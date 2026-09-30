@@ -1,6 +1,9 @@
 /**
  * 查询附近约 ±0.15°（十几公里）范围内的球友密度
  * 只返回网格中心 + 人数，不返回任何身份信息。
+ * 注意：内部错误不抛异常，而是返回 { cells: [], error: 原因 } ——
+ * 云函数一旦抛异常，开发者工具里 callFunction 会走 success 且 result 为 null，
+ * 直接把页面回调打崩；把错误带回客户端控制台才能看到真实原因。
  */
 const cloud = require('wx-server-sdk');
 
@@ -16,29 +19,34 @@ exports.main = async (event) => {
   const lat = parseFloat(event.lat);
   const lng = parseFloat(event.lng);
   if (isNaN(lat) || isNaN(lng)) {
-    throw new Error('bad lat/lng');
+    return { cells: [], error: 'bad lat/lng' };
   }
 
-  const res = await db.collection('presence')
-    .where({
-      expireAt: _.gt(Date.now()),
-      gridLat: _.gte(lat - RANGE).and(_.lte(lat + RANGE)),
-      gridLng: _.gte(lng - RANGE).and(_.lte(lng + RANGE))
-    })
-    .limit(1000)
-    .get();
+  try {
+    const res = await db.collection('presence')
+      .where({
+        expireAt: _.gt(Date.now()),
+        gridLat: _.gte(lat - RANGE).and(_.lte(lat + RANGE)),
+        gridLng: _.gte(lng - RANGE).and(_.lte(lng + RANGE))
+      })
+      .limit(1000)
+      .get();
 
-  // 数据库端不便做聚合，取回后按网格统计
-  const byGrid = {};
-  res.data.forEach(function (doc) {
-    byGrid[doc.grid] = (byGrid[doc.grid] || 0) + 1;
-  });
+    // 数据库端不便做聚合，取回后按网格统计
+    const byGrid = {};
+    res.data.forEach(function (doc) {
+      byGrid[doc.grid] = (byGrid[doc.grid] || 0) + 1;
+    });
 
-  const cells = Object.keys(byGrid)
-    .map(function (grid) { return { grid: grid, count: byGrid[grid] }; })
-    .filter(function (c) { return c.count >= MIN_CELL_COUNT; })   // 隐私过滤在云端做，不依赖客户端
-    .sort(function (a, b) { return b.count - a.count; })
-    .slice(0, MAX_CELLS);
+    const cells = Object.keys(byGrid)
+      .map(function (grid) { return { grid: grid, count: byGrid[grid] }; })
+      .filter(function (c) { return c.count >= MIN_CELL_COUNT; })   // 隐私过滤在云端做，不依赖客户端
+      .sort(function (a, b) { return b.count - a.count; })
+      .slice(0, MAX_CELLS);
 
-  return { cells: cells };
+    return { cells: cells };
+  } catch (e) {
+    // 典型原因：presence 集合不存在 / 建在了别的环境 / 云端依赖没装上。原样带回控制台
+    return { cells: [], error: String((e && (e.errMsg || e.message)) || e) };
+  }
 };
