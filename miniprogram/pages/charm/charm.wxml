@@ -37,6 +37,8 @@
         bindtap="pickMode"
       >{{item.label}}</view>
     </view>
+    <view class="hint-line">灯效状态由饰品实时上报，与手机不一致时可一键同步</view>
+    <view class="btn mini block" hover-class="btn-hover" bindtap="pushSettings">📥 应用我的设置（{{myModeLabel}} · 亮度{{myBrightness}}）</view>
     <view class="btn mini block" hover-class="btn-hover" bindtap="flash">⚡ 闪一下</view>
   </view>
 

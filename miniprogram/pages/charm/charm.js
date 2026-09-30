@@ -22,7 +22,9 @@ Page({
     color: '#ccff00',
     lostAlert: true,
     modes: proto.MODES,
-    colors: COLORS
+    colors: COLORS,
+    myModeLabel: '呼吸',
+    myBrightness: 90
   },
 
   onShow: function () {
@@ -38,7 +40,9 @@ Page({
       mode: s.lightMode,
       brightness: s.brightness,
       color: s.color,
-      lostAlert: s.lostAlert
+      lostAlert: s.lostAlert,
+      myModeLabel: proto.modeLabel(s.lightMode),
+      myBrightness: s.brightness
     });
   },
 
@@ -118,17 +122,23 @@ Page({
         that.setData({ charmName: name });
       }
       that.setData({ state: 'connected' });
-      that.pushSettings();
       wx.showToast({ title: '已连接', icon: 'success' });
+      /* 不自动推送：连接期间饰品状态是实时真值（产品方案 §7.2），
+         状态卡等第一帧状态上报后自然刷新；想覆盖成手机偏好用「应用我的设置」 */
     });
   },
 
-  /* 连上后把本机保存的灯效设置推给饰品 */
+  /* 把手机保存的灯效偏好一次性推给饰品（用户主动点，不自动执行） */
   pushSettings: function () {
+    if (!ble.isConnected()) {
+      wx.showToast({ title: '饰品未连接', icon: 'none' });
+      return;
+    }
     var s = store.getSettings();
     ble.sendMode(s.lightMode);
     setTimeout(function () { ble.sendBrightness(s.brightness); }, 150);
     setTimeout(function () { ble.sendColor(s.color); }, 300);
+    wx.showToast({ title: '已应用我的设置', icon: 'success' });
   },
 
   renameCharm: function () {
@@ -150,13 +160,13 @@ Page({
 
   pickMode: function (e) {
     var v = +e.currentTarget.dataset.v;
-    this.setData({ mode: v });
+    this.setData({ mode: v, myModeLabel: proto.modeLabel(v) });
     store.updateSettings({ lightMode: v });
     ble.sendMode(v);
   },
 
   flash: function () {
-    ble.sendTrigger(6);
+    ble.sendTrigger(proto.MODE_RADAR);
   },
 
   onBrightDrag: function (e) {
@@ -165,7 +175,7 @@ Page({
 
   onBrightChange: function (e) {
     var v = e.detail.value;
-    this.setData({ brightness: v });
+    this.setData({ brightness: v, myBrightness: v });
     store.updateSettings({ brightness: v });
     ble.sendBrightness(v);
   },
