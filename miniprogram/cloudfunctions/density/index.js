@@ -10,6 +10,7 @@ const _ = db.command;
 
 const RANGE = 0.15;   // 纬经度各 ±0.15°
 const MAX_CELLS = 200;
+const MIN_CELL_COUNT = 3;   // 单格少于 3 人不返回格点（方案 §16.2，防单人定位）
 
 exports.main = async (event) => {
   const lat = parseFloat(event.lat);
@@ -35,6 +36,7 @@ exports.main = async (event) => {
 
   const cells = Object.keys(byGrid)
     .map(function (grid) { return { grid: grid, count: byGrid[grid] }; })
+    .filter(function (c) { return c.count >= MIN_CELL_COUNT; })   // 隐私过滤在云端做，不依赖客户端
     .sort(function (a, b) { return b.count - a.count; })
     .slice(0, MAX_CELLS);
 

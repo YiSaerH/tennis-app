@@ -9,8 +9,10 @@ const crypto = require('crypto');
 cloud.init({ env: cloud.DYNAMIC_CURRENT_ENV });
 const db = cloud.database();
 
-/* 部署后请改成自己的随机字符串（改了旧数据会自然过期消失，属于正常现象） */
-const SALT = 'tennis-charm-salt-change-me';
+/* HMAC 盐：优先用云开发控制台配置的环境变量 PRESENCE_SALT（设置 → 环境配置），
+   本地/未配置时才落到这个开发兜底值 —— 生产密钥绝不进代码仓库（方案 §16.4）。
+   换盐后旧数据会自然过期消失（心跳 10 分钟 / 打卡 2 小时），属正常现象。 */
+const SALT = process.env.PRESENCE_SALT || 'tennis-charm-salt-dev-only';
 
 exports.main = async (event) => {
   const { OPENID } = cloud.getWXContext();

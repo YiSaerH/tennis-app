@@ -16,7 +16,10 @@
 3. 右键 `cloudfunctions/report` →「上传并部署：云端安装依赖」，`density`、`cleanup` 同样操作。
 4. `cleanup` 上传后，右键 →「上传触发器」启用 30 分钟定时清理。
 5. 打开 `miniprogram/app.js`，确认 `presence.initCloud()` 已在（本仓库默认走环境自动初始化；如控制台提示需要指定环境 ID，把 `wx.cloud.init({ env: '你的环境ID' })` 写进 `utils/presence.js` 的 `initCloud` 里）。
-6. **改盐**：`report/index.js` 里的 `SALT` 换成自己的随机字符串。
+6. **配置盐（重要，别跳过）**：`report` 的 HMAC 盐从环境变量 `PRESENCE_SALT` 读取。
+   云开发控制台 → 云函数 → `report` → 配置 → 环境变量，添加 `PRESENCE_SALT` = 一串自己的随机字符串（比如 `openssl rand -hex 32` 生成的）。
+   不配置时只落到开发兜底值，**公开仓库 + 默认盐等于把匿名化钥匙公开**。换盐后旧数据 10 分钟内自然过期，不用清理。
+7. `density` 已内置「单格 <3 人不返回」的隐私过滤（在云端做，客户端绕不过去）。
 
 ## 隐私声明（重要）
 
