@@ -32,7 +32,7 @@ function callFn(name, data, cb) {
     name: name,
     data: data,
     success(res) {
-      console.log('[cloud] ' + name + ' 调用成功');
+      console.log('[cloud] ' + name + ' 调用成功: ' + JSON.stringify(res.result));
       cb(null, res.result);
     },
     fail(res) {
@@ -61,7 +61,8 @@ function offline(cb) {
   });
 }
 
-/* 附近密度。拿不到云数据 → 演示网格（demo 标记给页面显示提示条） */
+/* 附近密度。拿不到云数据 → 演示网格（demo 标记给页面显示提示条）。
+   注意回调是单参数 res = { demo, cells }（球友页按单参数接收，别再传 (null, res)） */
 function density(lat, lng, cb) {
   callFn('density', { lat: lat, lng: lng }, function (err, result) {
     if (result && result.error) {
@@ -69,10 +70,10 @@ function density(lat, lng, cb) {
     }
     if (err || !result || result.error || !result.cells) {
       console.log('[cloud] density 降级演示数据，原始返回: ' + JSON.stringify(result || err));
-      cb(null, { demo: true, cells: geogrid.demoCells(lat, lng) });
+      cb({ demo: true, cells: geogrid.demoCells(lat, lng) });
       return;
     }
-    cb(null, { demo: false, cells: result.cells });
+    cb({ demo: false, cells: result.cells });
   });
 }
 
