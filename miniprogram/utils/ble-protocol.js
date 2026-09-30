@@ -14,16 +14,19 @@ var CMD_SET_BRIGHT = 0x03;  // payload: [亮度 0-255]
 var CMD_TRIGGER = 0x04;     // payload: [效果号]，目前 6=雷达闪烁（一次性）
 var CMD_BIND = 0x10;        // payload: 16 字节随机 token（v0.1 固件只存 RAM，鉴权在 v0.2）
 
-/* 模式值与 UI 文案（固件里的 switch 分支同号） */
+/* 常驻灯效模式（固件里的 switch 分支同号）。雷达是一次性触发效果，不进常驻
+   列表，小程序里用独立按钮（TRIGGER）触发（产品方案 §6.2） */
 var MODES = [
   { v: 0, label: '关' },
   { v: 1, label: '热身' },
   { v: 2, label: '呼吸' },
   { v: 3, label: '心跳' },
   { v: 4, label: '弹跳' },
-  { v: 5, label: '彩虹' },
-  { v: 6, label: '雷达' }
+  { v: 5, label: '彩虹' }
 ];
+
+/* 雷达触发号：TRIGGER 帧的 payload，与固件 MODE_RADAR 同号（固件 setMode 不接受 6） */
+var MODE_RADAR = 6;
 function modeLabel(v) {
   for (var i = 0; i < MODES.length; i++) {
     if (MODES[i].v === v) return MODES[i].label;
@@ -111,6 +114,7 @@ module.exports = {
   CMD_TRIGGER: CMD_TRIGGER,
   CMD_BIND: CMD_BIND,
   MODES: MODES,
+  MODE_RADAR: MODE_RADAR,
   modeLabel: modeLabel,
   encodeFrame: encodeFrame,
   isValidFrame: isValidFrame,

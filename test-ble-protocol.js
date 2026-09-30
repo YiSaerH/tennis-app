@@ -95,5 +95,13 @@ console.log('\n[6] ArrayBuffer 转换');
   ok(Array.isArray(P.fromBuffer(buf)), 'fromBuffer 返回普通数组');
 }
 
+/* ---- 7. 常驻模式列表不含雷达（产品方案 §6.2：雷达是一次性动作） ---- */
+console.log('\n[7] 常驻模式列表');
+{
+  ok(P.MODES.every(function (m) { return m.v !== P.MODE_RADAR; }), '雷达不在常驻模式列表里');
+  eq(P.MODES.length, 6, '常驻模式共 6 个（关/热身/呼吸/心跳/弹跳/彩虹）');
+  eq(P.modeLabel(6), '—', '雷达没有常驻标签，只能通过 TRIGGER 触发');
+}
+
 console.log('\n结果：' + passed + ' 通过，' + failed + ' 失败');
 process.exit(failed ? 1 : 0);

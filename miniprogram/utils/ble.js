@@ -21,7 +21,7 @@ var state = {
   connected: false
 };
 var statusCb = null;      // 状态通知回调（电量/模式/颜色/亮度）
-var disconnectCb = null;  // 断连回调（防丢提醒用）
+var disconnectCb = null;  // 断连回调（连接异常提醒用）
 
 /* ---------- 适配器 ---------- */
 function ensureAdapter(cb) {

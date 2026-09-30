@@ -199,10 +199,10 @@ function defaultSettings() {
     shareLocation: false,  // 球友地图共享（默认关，开了才上报）
     lastCheckinAt: 0,      // 上次球场打卡时间（打卡在地图上保留 2 小时）
     charmName: '',         // 饰品昵称
-    lightMode: 2,          // 灯效模式（与 ble-protocol 的 MODES 对应：0关 1常亮 2呼吸 3心跳 4弹跳 5彩虹 6雷达）
+    lightMode: 2,          // 灯效模式（与 ble-protocol 的 MODES 对应：0关 1热身 2呼吸 3心跳 4弹跳 5彩虹；雷达是一次性触发，不在列表）
     brightness: 90,        // 亮度 0-255
     color: '#ccff00',      // 灯色（网球黄绿）
-    lostAlert: true        // 饰品断连时防丢提醒
+    lostAlert: true        // 饰品意外断连时弹「连接异常提醒」
   };
 }
 function updateSettings(patch) {

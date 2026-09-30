@@ -1,13 +1,13 @@
 <view class="page-head">
   <view class="h1">我的饰品</view>
-  <view class="sub">网球记智能饰品 · 灯效与防丢</view>
+  <view class="sub">网球记智能饰品 · 灯效与连接提醒</view>
 </view>
 
 <block wx:if="{{state !== 'connected'}}">
   <view class="card empty-card">
     <view class="empty-emoji">🎾</view>
     <view class="empty-text">{{state === 'scanning' ? '正在搜索附近的饰品…' : '还没绑定饰品'}}</view>
-    <view class="hint-line">长按饰品按键开机，靠近手机后点击下方按钮</view>
+    <view class="hint-line">给饰品插上 USB 供电，蓝灯开始闪烁后点击下方按钮</view>
     <view class="btn primary block" hover-class="btn-hover" bindtap="bindCharm">
       {{state === 'scanning' ? '搜索中…' : '🔗 搜索并绑定饰品'}}
     </view>
@@ -70,7 +70,7 @@
   <view class="card">
     <view class="row">
       <view class="row-main">
-        <view class="row-title">防丢提醒</view>
+        <view class="row-title">连接异常提醒</view>
         <view class="row-sub">饰品意外断开连接时弹窗提醒</view>
       </view>
       <switch checked="{{lostAlert}}" bindchange="toggleLostAlert" color="#2e7d32" />

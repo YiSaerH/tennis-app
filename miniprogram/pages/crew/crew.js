@@ -2,6 +2,7 @@ var store = require('../../utils/store');
 var presence = require('../../utils/presence');
 var geogrid = require('../../utils/geogrid');
 var ble = require('../../utils/ble');
+var proto = require('../../utils/ble-protocol');
 
 /* 没拿到定位时的默认中心（北京），拿到模糊定位后会自动切到用户所在城市 */
 var DEFAULT_CENTER = { latitude: 39.90, longitude: 116.41 };
@@ -23,7 +24,14 @@ Page({
     var settings = store.getSettings();
     this.setData({
       shareLocation: settings.shareLocation,
-      charmName: settings.charmName
+      charmName: settings.charmName,
+      charmConnected: ble.isConnected()
+    });
+    /* 断连回调是单槽的：球友页显示时接管它刷新连接胶囊；
+       回到饰品页时那边 onShow 会重新注册自己的回调（带弹窗） */
+    var that = this;
+    ble.onDisconnect(function () {
+      that.setData({ charmConnected: false });
     });
     this.renderCheckin();
     if (settings.shareLocation) {
@@ -166,7 +174,7 @@ Page({
       onPeer: function (peer) {
         that.setData({ radarState: 'found' });
         if (ble.isConnected()) {
-          ble.sendTrigger(6);  // 让自己的饰品闪雷达灯效
+          ble.sendTrigger(proto.MODE_RADAR);  // 让自己的饰品闪一下
         }
         wx.showToast({ title: '附近有球友！', icon: 'none' });
         setTimeout(function () {
